@@ -1,0 +1,18 @@
+# Audit-only: torch is enough for verify_absorption.py
+torch>=2.0
+numpy>=1.24
+
+# Training / inference / Dice table
+pyyaml>=6.0
+monai>=1.3
+batchgenerators>=0.25
+einops>=0.7
+tqdm>=4.66
+scipy>=1.11
+SimpleITK>=2.3
+medpy>=0.5
+
+# Mamba backbone (B0 and A1–A8). Not needed for --synthetic or for C1/C2.
+# Install from source if the pip wheels do not match your CUDA:
+#   mamba-ssm
+#   causal-conv1d

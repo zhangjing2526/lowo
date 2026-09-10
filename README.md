@@ -1,7 +1,9 @@
-# LOWO — Learnable Orthogonal Wavelet Operator
+# LOWO: Structurally Orthogonal Wavelet Resampling for 3D Convolutions
 
 **[ICASSP 2027 submission]** Structural orthogonal wavelet resampling for 3D convolutions, and the
 identifiability of its learned basis.
+
+Code: [https://github.com/zhangjing2526/lowo](https://github.com/zhangjing2526/lowo)
 
 This repository contains the models, training/inference recipes and the exact
 checkpoint-level audit that supports the claims of the paper
@@ -26,12 +28,15 @@ Identifiability of Its Learned Basis"*.
 | `model_segmamba/lowo.py` | **The LOWO operator itself** — `HaarWavelet3D`, `HaarDownsample`, `HaarUpsample`, `WaveletConv3d`. Backbone-agnostic (only `torch`). |
 | `model_segmamba/haar_blocks.py` | UNet decoder blocks built on LOWO (`WaveletGSC`, `HaarUpBlock`, `MlpChannel`). |
 | `model_segmamba/segmamba_haar.py` | SegMamba + LOWO (encoder/decoder wiring). |
-| `model_segmamba/segmamba_attn.py` | SegAttn + LOWO (Swin-attention sequence mixer). |
+| `model_segmamba/segmamba_attn.py` | SegAttn + LOWO (Swin-attention sequence mixer). C1/C2. |
 | `model_segmamba/segmamba.py` | Original SegMamba backbone (Mamba SSM mixer) — **B0** & the low-precision reference. |
 | `configs/` | One YAML per paper arm. IDs match the paper; filenames encode the factors (wavelet × mixer). |
-| `scripts/` | Training / inference / evaluation / metric scripts. |
 | `verify_absorption.py` | **§3.2 exact audit** — folds the learned Q into the subband mixer and reproduces each trained network to float64 round-off *from the checkpoint alone* (CPU, no data, no GPU). |
-| `analysis/absorption_sites.csv` | Per-site audit records for the nine trained checkpoints (drift ‖Q−I‖_F, escape fraction ρ). |
+| `checkpoints/a6_so8_g8_audit.pt` | Wavelet `Q` and adjacent mixer tensors from the A6 checkpoint (not the full 226 MB training weight). Enough to reproduce the `7.3×10⁻¹⁵` fold error. |
+| `analysis/absorption_sites.csv` | Per-site audit records for the nine trained checkpoints (147 sites: drift ‖Q−I‖_F, escape fraction ρ, fold error). |
+| `run_test_eval.py` | Test-set Dice / HD95 protocol (8-way TTA, overlap 0.7, `--force_ethr 50`). Needs BraTS data and a full training checkpoint. |
+| `splits/test_250.txt` | Frozen 250-case test list used in the paper. |
+| `requirements.txt` | Python dependencies. |
 
 ## Paper arms and their configs
 
@@ -65,30 +70,41 @@ Paper IDs are unchanged. Filenames encode the ablation factors so A1–A6 read a
 
 ## Quick start
 
-### Requirements
+```bash
+pip install -r requirements.txt
+```
 
 - Python ≥ 3.9, PyTorch ≥ 2.0
-- `monai` (networks/blocks/inferers) — install via `pip install monai`
-- `mamba-ssm` + `causal-conv1d` for the Mamba backbone (`B0`, all `segmamba*` arms)
-- `batchgenerators` for preprocessing
+- `monai` for networks / sliding-window inference
+- `mamba-ssm` + `causal-conv1d` only for the Mamba backbone (`B0`, A1–A8). C1/C2 and `verify_absorption.py` do not need them.
 
 ### Verify the absorption identity (CPU, no data — the §3.2 audit)
 
 ```bash
-# against a released checkpoint
-python verify_absorption.py logs/segmamba_haar_so8_dicece_ds/model/best_model_0.9317.pt
+# 1. no download: random Q, W  (proves the identity; numbers will not match the paper)
+python verify_absorption.py --synthetic
+
+# 2. the paper's A6 tensors (in-repo, ~few MB) — this is the 7.3e-15 check
+python verify_absorption.py checkpoints/a6_so8_g8_audit.pt
 ```
 
-This does **not** load the network, does **not** need a GPU or BraTS data. It reads
-the state dict of any trained LOWO checkpoint, folds each learned basis Q into the
-adjacent subband mixer, and compares the folded network against the original to
-machine precision. You should see:
+Neither command loads the network, needs a GPU, or touches BraTS. The script
+reads wavelet `Q` and the adjacent 1×1 mixer, folds `Q` into the mixer, and
+compares the folded operator against the original to machine precision.
+
+On the A6 audit file you should see:
 
 ```text
 wavelet sites: 16
 max fold error: 7.3e-15
-inert (ρ≈0): 8/16
+inert (ρ≈0): 4/16
 ```
+
+(A6 uses `groups=8` on the encoder mixers, so only the four decoder upsamples are absorbable. A5 with `groups=1` is 8/16 inert.)
+
+A full training checkpoint (`best_model_0.9317.pt`, ~226 MB) is **not** required
+for this audit. Host that file on a GitHub Release / Zenodo / Hugging Face
+dataset if you want to reproduce Dice; do not put it on a region-locked drive.
 
 ### Reproduce a paper arm (example: A6, learnable Q + groups=8)
 
@@ -100,16 +116,25 @@ python scripts/preprocessing_brats2021.py
 # 2. train (500 epochs, DiceCE + deep supervision)
 python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8
 
-# 3. inference (sliding window, overlap 0.7, 8-way mirror TTA)
-python predict.py --ckpt logs/segmamba_haar_so8_dicece_ds/a6_so8_g8_s123/model/best_model_*.pt
-
-# 4. metrics (Dice / HD95, BraTS convention)
-python compute_metrics.py --pred_name a6_so8_g8
+# 3. inference + metrics (sliding window, overlap 0.7, 8-way mirror TTA,
+#    ET→NCR volume threshold fixed at 50 — the protocol behind Table 1)
+python run_test_eval.py --config configs/A6_so8_g8.yaml \
+    --ckpt logs/segmamba_haar_so8_dicece_ds/a6_so8_g8_s123/model/best_model_*.pt \
+    --force_ethr 50 --test_list splits/test_250.txt --stage test
 ```
 
-All arms share the identical evaluation protocol (single split, same 250-case test
-manifest, same post-processing), so per-arm numbers in the paper are directly
-comparable.
+C1 / C2 use the same trainer (`model: segattn_haar` in the YAML) and do not
+import `mamba_ssm`:
+
+```bash
+python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml
+python train_brats2021_attn.py   # equivalent, attention-only script
+```
+
+All arms share the identical evaluation protocol (single split, same 250-case
+test list, same post-processing), so per-arm numbers in the paper are directly
+comparable. Dice reproduction still needs BraTS2021 and a full training
+checkpoint; the identifiability audit does not.
 
 ## Repository layout rationale
 
@@ -138,6 +163,14 @@ comparable.
 | `python train_brats2021.py --config configs/A8_so8_per_channel.yaml` | A8 |
 | `python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml` | C1 |
 | `python train_brats2021.py --config configs/C2_segattn_so8_g1_routed.yaml` | C2 |
+
+Eval (same protocol for every arm):
+
+```bash
+python run_test_eval.py --config configs/<arm>.yaml \
+    --ckpt <full_training_weight.pt> \
+    --force_ethr 50 --test_list splits/test_250.txt --stage test
+```
 
 ## License
 

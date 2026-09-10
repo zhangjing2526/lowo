@@ -1,0 +1,148 @@
+arm,label,site,role,groups,drift,rho,fold_err
+A1,"fixed, g1",vit.downsample_layers.0.0,downsample,1,0.0,0.0,0.0
+A1,"fixed, g1",vit.downsample_layers.1.1,downsample,1,0.0,0.0,0.0
+A1,"fixed, g1",vit.downsample_layers.2.1,downsample,1,0.0,0.0,0.0
+A1,"fixed, g1",vit.downsample_layers.3.1,downsample,1,0.0,0.0,0.0
+A1,"fixed, g1",decoder2,upsample,1,0.0,0.0,0.0
+A1,"fixed, g1",decoder3,upsample,1,0.0,0.0,0.0
+A1,"fixed, g1",decoder4,upsample,1,0.0,0.0,0.0
+A1,"fixed, g1",decoder5,upsample,1,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.0.proj,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.0.proj2,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.1.proj,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.1.proj2,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.2.proj,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.2.proj2,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.3.proj,waveletconv,8,0.0,0.0,0.0
+A1,"fixed, g1",vit.gscs.3.proj2,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.downsample_layers.0.0,downsample,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.downsample_layers.1.1,downsample,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.downsample_layers.2.1,downsample,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.downsample_layers.3.1,downsample,8,0.0,0.0,0.0
+A2,"fixed, g8",decoder2,upsample,1,0.0,0.0,0.0
+A2,"fixed, g8",decoder3,upsample,1,0.0,0.0,0.0
+A2,"fixed, g8",decoder4,upsample,1,0.0,0.0,0.0
+A2,"fixed, g8",decoder5,upsample,1,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.0.proj,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.0.proj2,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.1.proj,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.1.proj2,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.2.proj,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.2.proj2,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.3.proj,waveletconv,8,0.0,0.0,0.0
+A2,"fixed, g8",vit.gscs.3.proj2,waveletconv,8,0.0,0.0,0.0
+A3,"theta, g1",vit.downsample_layers.0.0,downsample,1,0.4303054559785536,0.0,7.257072446651969e-16
+A3,"theta, g1",vit.downsample_layers.1.1,downsample,1,0.2524704978746718,0.0,2.845716588609853e-15
+A3,"theta, g1",vit.downsample_layers.2.1,downsample,1,0.5112443046609152,0.0,3.43922208170085e-15
+A3,"theta, g1",vit.downsample_layers.3.1,downsample,1,1.226726286907331,0.0,4.533515454461289e-15
+A3,"theta, g1",decoder2,upsample,1,0.20240886999315852,0.0,8.055654871100339e-16
+A3,"theta, g1",decoder3,upsample,1,0.32317037898690104,0.0,1.2441475028040844e-15
+A3,"theta, g1",decoder4,upsample,1,0.2222911828714792,0.0,1.3610352586302765e-15
+A3,"theta, g1",decoder5,upsample,1,0.6707765100783417,0.0,1.6665730655995876e-15
+A3,"theta, g1",vit.gscs.0.proj,waveletconv,8,0.5072041108830231,0.17860146438239902,1.3871123392105492e-15
+A3,"theta, g1",vit.gscs.0.proj2,waveletconv,8,1.100317887725395,0.3815909815410148,1.839805131954337e-15
+A3,"theta, g1",vit.gscs.1.proj,waveletconv,8,0.027022673860257685,0.009553848957162029,1.8226809096639497e-15
+A3,"theta, g1",vit.gscs.1.proj2,waveletconv,8,0.1838139562597656,0.06495372922158289,2.8474619212068475e-15
+A3,"theta, g1",vit.gscs.2.proj,waveletconv,8,0.22074460192384918,0.07798555809453259,3.4525394429333375e-15
+A3,"theta, g1",vit.gscs.2.proj2,waveletconv,8,0.11259437952524157,0.03980023843560084,4.232755589228312e-15
+A3,"theta, g1",vit.gscs.3.proj,waveletconv,8,0.4174400018650689,0.14718493571834282,6.5067186031662e-15
+A3,"theta, g1",vit.gscs.3.proj2,waveletconv,8,0.3879378670801664,0.136833844504044,6.4693448181065416e-15
+A5,"so8, g1",vit.downsample_layers.0.0,downsample,1,2.836041591703095,0.0,4.812040075365276e-16
+A5,"so8, g1",vit.downsample_layers.1.1,downsample,1,1.0160277225213725,0.0,2.613130674819587e-15
+A5,"so8, g1",vit.downsample_layers.2.1,downsample,1,0.8698437993016529,0.0,3.3081684160699022e-15
+A5,"so8, g1",vit.downsample_layers.3.1,downsample,1,0.6064311258989248,0.0,5.923512859457257e-15
+A5,"so8, g1",decoder2,upsample,1,0.2989834558682369,0.0,7.696530420376579e-16
+A5,"so8, g1",decoder3,upsample,1,0.37093587602519307,0.0,1.3311069539374231e-15
+A5,"so8, g1",decoder4,upsample,1,0.2709820719405096,0.0,1.6792968367586116e-15
+A5,"so8, g1",decoder5,upsample,1,0.21558738987846937,0.0,1.6419553644762303e-15
+A5,"so8, g1",vit.gscs.0.proj,waveletconv,8,2.6224905715133646,0.7104682994246209,8.667433866022146e-16
+A5,"so8, g1",vit.gscs.0.proj2,waveletconv,8,0.7808680203568948,0.2152699886594583,1.4124913998591413e-15
+A5,"so8, g1",vit.gscs.1.proj,waveletconv,8,1.2934275800641357,0.4141067377472627,2.025705412356641e-15
+A5,"so8, g1",vit.gscs.1.proj2,waveletconv,8,0.24583776531486257,0.09291950964536223,3.960821601598336e-15
+A5,"so8, g1",vit.gscs.2.proj,waveletconv,8,0.3145469392056927,0.11702063224566876,3.175776375819283e-15
+A5,"so8, g1",vit.gscs.2.proj2,waveletconv,8,0.20244429874088057,0.07530728113213521,3.939279652152957e-15
+A5,"so8, g1",vit.gscs.3.proj,waveletconv,8,0.3426211218868348,0.12250479156988484,5.009445667871942e-15
+A5,"so8, g1",vit.gscs.3.proj2,waveletconv,8,0.19378176462985117,0.06897361440652904,4.91928753888048e-15
+A6,"so8, g8",vit.downsample_layers.0.0,downsample,8,3.530612666862899,0.8840294760134754,3.12030642609553e-16
+A6,"so8, g8",vit.downsample_layers.1.1,downsample,8,2.2905650406653075,0.7461354683438032,1.0106210634681483e-15
+A6,"so8, g8",vit.downsample_layers.2.1,downsample,8,1.1755431041333335,0.5223562207951756,3.471102364638238e-15
+A6,"so8, g8",vit.downsample_layers.3.1,downsample,8,0.6997685432054691,0.30220154847294983,2.472813924896935e-15
+A6,"so8, g8",decoder2,upsample,1,0.31838928241656744,0.0,8.083768020720244e-16
+A6,"so8, g8",decoder3,upsample,1,0.2835075862847918,0.0,1.7240460965138714e-15
+A6,"so8, g8",decoder4,upsample,1,0.24532826537154195,0.0,1.5631839584129812e-15
+A6,"so8, g8",decoder5,upsample,1,0.1970897061159079,0.0,2.0004083230478753e-15
+A6,"so8, g8",vit.gscs.0.proj,waveletconv,8,1.3601060899064497,0.4401081650048157,1.8754365176918326e-15
+A6,"so8, g8",vit.gscs.0.proj2,waveletconv,8,3.0597656003535256,0.8083855648319923,1.171967727217759e-15
+A6,"so8, g8",vit.gscs.1.proj,waveletconv,8,1.3019983005762004,0.39823807944518164,1.9799969658557855e-15
+A6,"so8, g8",vit.gscs.1.proj2,waveletconv,8,0.3097125092154957,0.1210364820232384,2.8464517072562475e-15
+A6,"so8, g8",vit.gscs.2.proj,waveletconv,8,0.9746556005016835,0.3485139584304597,3.694098314511225e-15
+A6,"so8, g8",vit.gscs.2.proj2,waveletconv,8,0.493885631470226,0.19904843207896034,3.982962193500593e-15
+A6,"so8, g8",vit.gscs.3.proj,waveletconv,8,0.36662627662802477,0.13198138522900532,5.874364647737805e-15
+A6,"so8, g8",vit.gscs.3.proj2,waveletconv,8,0.3704297030618691,0.13668607160172624,7.291974700171982e-15
+A7,"so8, g1, +wb",vit.downsample_layers.0.0,downsample,1,1.8675804765029504,0.0,6.671102449077537e-16
+A7,"so8, g1, +wb",vit.downsample_layers.1.1,downsample,1,0.9854766845631175,0.0,2.342940012443414e-15
+A7,"so8, g1, +wb",vit.downsample_layers.2.1,downsample,1,0.3612591644976469,0.0,3.336293446278771e-15
+A7,"so8, g1, +wb",vit.downsample_layers.3.1,downsample,1,0.35439294915237524,0.0,4.5784977997071766e-15
+A7,"so8, g1, +wb",decoder2,upsample,1,0.3288447109503517,0.0,1.261825170852842e-15
+A7,"so8, g1, +wb",decoder3,upsample,1,0.33075201239055474,0.0,1.0507380482126131e-15
+A7,"so8, g1, +wb",decoder4,upsample,1,0.18515841408970837,0.0,1.2209887289617245e-15
+A7,"so8, g1, +wb",decoder5,upsample,1,0.17284593792299008,0.0,2.5207518173282506e-15
+A7,"so8, g1, +wb",vit.gscs.0.proj,waveletconv,8,1.3135926509113718,0.4574626587741193,1.7586189234268098e-15
+A7,"so8, g1, +wb",vit.gscs.0.proj2,waveletconv,8,0.18747816182223204,0.05350814698122279,1.3118624672024118e-15
+A7,"so8, g1, +wb",vit.gscs.1.proj,waveletconv,8,0.8757304370625804,0.328946641436407,2.4441010570377837e-15
+A7,"so8, g1, +wb",vit.gscs.1.proj2,waveletconv,8,0.37034588960395826,0.17553582843546406,2.987717943206864e-15
+A7,"so8, g1, +wb",vit.gscs.2.proj,waveletconv,8,0.5363772846403765,0.20591590110559996,3.0774964185328535e-15
+A7,"so8, g1, +wb",vit.gscs.2.proj2,waveletconv,8,0.20041744890982902,0.08253855219736751,3.712764293400622e-15
+A7,"so8, g1, +wb",vit.gscs.3.proj,waveletconv,8,0.2844800601099536,0.10275200036303898,5.323851519664932e-15
+A7,"so8, g1, +wb",vit.gscs.3.proj2,waveletconv,8,0.18746098223855898,0.06684006589491855,5.601397662652725e-15
+A8,"so8, per-channel",vit.downsample_layers.0.0.mixes.0,downsample/pc,1,1.1122918101668269,0.0,3.0968791210301457e-16
+A8,"so8, per-channel",vit.downsample_layers.0.0.mixes.1,downsample/pc,1,0.8880244394142246,0.0,4.473127685633627e-16
+A8,"so8, per-channel",vit.downsample_layers.0.0.mixes.2,downsample/pc,1,0.8568671020598951,0.0,2.613509888861179e-16
+A8,"so8, per-channel",vit.downsample_layers.0.0.mixes.3,downsample/pc,1,1.081291945647203,0.0,2.3328270026953565e-16
+A8,"so8, per-channel",vit.downsample_layers.1.1,downsample,1,1.6337973827641785,0.0,2.1978565608854956e-15
+A8,"so8, per-channel",vit.downsample_layers.2.1,downsample,1,0.7280677266065163,0.0,4.0039730431608675e-15
+A8,"so8, per-channel",vit.downsample_layers.3.1,downsample,1,0.7305573232506268,0.0,3.338220904515439e-15
+A8,"so8, per-channel",decoder2,upsample,1,0.34359880645394986,0.0,5.73996651148918e-16
+A8,"so8, per-channel",decoder3,upsample,1,0.30351560121230836,0.0,1.0437665530168077e-15
+A8,"so8, per-channel",decoder4,upsample,1,0.2707363203848108,0.0,1.1444347416756051e-15
+A8,"so8, per-channel",decoder5,upsample,1,0.25896316159861893,0.0,1.7790382931785586e-15
+A8,"so8, per-channel",vit.gscs.0.proj,waveletconv,8,1.8584264031829443,0.5552659899307631,1.6629795122805856e-15
+A8,"so8, per-channel",vit.gscs.0.proj2,waveletconv,8,1.0247200217688421,0.3921120551473911,1.212089897616888e-15
+A8,"so8, per-channel",vit.gscs.1.proj,waveletconv,8,0.3414297361052079,0.12583425780755092,1.9872380758462772e-15
+A8,"so8, per-channel",vit.gscs.1.proj2,waveletconv,8,0.28944535766924073,0.11328485747236575,1.8177314269426345e-15
+A8,"so8, per-channel",vit.gscs.2.proj,waveletconv,8,0.322799239005865,0.11510934421129446,2.9367046754263136e-15
+A8,"so8, per-channel",vit.gscs.2.proj2,waveletconv,8,0.22473882810622392,0.08142779349090595,3.4380142275762427e-15
+A8,"so8, per-channel",vit.gscs.3.proj,waveletconv,8,0.3773196388124957,0.13377191944706293,5.4278069758867734e-15
+A8,"so8, per-channel",vit.gscs.3.proj2,waveletconv,8,0.27297564162154936,0.0966464947929171,5.047535189659445e-15
+C1,SegAttn-Haar,vit.downsample_layers.0.0,downsample,1,3.5343464502156983,0.0,5.887110574511217e-16
+C1,SegAttn-Haar,vit.downsample_layers.1.1,downsample,1,3.1290696374620772,0.0,2.9742265663374194e-15
+C1,SegAttn-Haar,vit.downsample_layers.2.1,downsample,1,1.0088121305267048,0.0,3.901571448702466e-15
+C1,SegAttn-Haar,vit.downsample_layers.3.1,downsample,1,0.6844087939927399,0.0,4.6946644717996446e-15
+C1,SegAttn-Haar,decoder2,upsample,1,0.951508729812844,0.0,1.1128015222436241e-15
+C1,SegAttn-Haar,decoder3,upsample,1,0.7141938633807722,0.0,1.1094597662614603e-15
+C1,SegAttn-Haar,decoder4,upsample,1,0.19469844966917235,0.0,1.3476821173048909e-15
+C1,SegAttn-Haar,decoder5,upsample,1,0.2240162528672379,0.0,1.5858094136377866e-15
+C1,SegAttn-Haar,vit.gscs.0.proj,waveletconv,8,2.411789855475959,0.5477311923472302,1.8499420492153748e-15
+C1,SegAttn-Haar,vit.gscs.0.proj2,waveletconv,8,2.9344404064028278,0.3739456505264025,1.953902983820181e-15
+C1,SegAttn-Haar,vit.gscs.1.proj,waveletconv,8,0.8881693479962299,0.31017709956733835,2.217755371145263e-15
+C1,SegAttn-Haar,vit.gscs.1.proj2,waveletconv,8,0.13572475872633522,0.04837147408007694,2.8038878972371065e-15
+C1,SegAttn-Haar,vit.gscs.2.proj,waveletconv,8,0.9171524839996638,0.3194684399726947,3.8989381559207495e-15
+C1,SegAttn-Haar,vit.gscs.2.proj2,waveletconv,8,0.1418252236234171,0.04883211417978611,2.7376698605630623e-15
+C1,SegAttn-Haar,vit.gscs.3.proj,waveletconv,8,0.37860548141795775,0.1355721206792841,6.1847743772628425e-15
+C1,SegAttn-Haar,vit.gscs.3.proj2,waveletconv,8,0.26582426627041206,0.09388313300609798,6.371192201165578e-15
+C2,SegAttn + routing,vit.downsample_layers.0.0,downsample,1,1.93374472364815,0.0,4.733241019372982e-16
+C2,SegAttn + routing,vit.downsample_layers.1.1,downsample,1,1.0344105780223676,0.0,2.548483731603099e-15
+C2,SegAttn + routing,vit.downsample_layers.2.1,downsample,1,0.5036565069998002,0.0,4.450736989878143e-15
+C2,SegAttn + routing,vit.downsample_layers.3.1,downsample,1,0.3823126095995372,0.0,5.335166999336026e-15
+C2,SegAttn + routing,decoder2,upsample,1,0.3868917750625719,0.0,1.0081570751794078e-15
+C2,SegAttn + routing,decoder3,upsample,1,0.3727032705308856,0.0,1.4090553907010135e-15
+C2,SegAttn + routing,decoder4,upsample,1,0.23691965124221628,0.0,1.3647249860269146e-15
+C2,SegAttn + routing,decoder5,upsample,1,0.15987351436744726,0.0,1.771913061886631e-15
+C2,SegAttn + routing,vit.gscs.0.proj,waveletconv,8,2.610453950754501,0.4778670632457339,1.6188851092607518e-15
+C2,SegAttn + routing,vit.gscs.0.proj2,waveletconv,8,0.523394217859227,0.1683945122633524,2.4560594714968943e-15
+C2,SegAttn + routing,vit.gscs.1.proj,waveletconv,8,0.9499367500695431,0.33000599124085933,1.605036183504047e-15
+C2,SegAttn + routing,vit.gscs.1.proj2,waveletconv,8,0.38014873655403675,0.14706243240963965,2.3487580888244413e-15
+C2,SegAttn + routing,vit.gscs.2.proj,waveletconv,8,0.24744883363108755,0.08895822627054435,3.4259106793733995e-15
+C2,SegAttn + routing,vit.gscs.2.proj2,waveletconv,8,0.21123233534826424,0.07813904769096608,3.683160829904457e-15
+C2,SegAttn + routing,vit.gscs.3.proj,waveletconv,8,0.36450773519976976,0.12939210882513777,7.080604012493043e-15
+C2,SegAttn + routing,vit.gscs.3.proj2,waveletconv,8,0.184644028208841,0.06576087044069623,4.830513542269546e-15

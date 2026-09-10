@@ -25,8 +25,11 @@ immediately following each mixer is a channel-wise normalisation, so a
 cross-channel linear factor cannot be commuted any further downstream.
 
 Runs on CPU from a checkpoint alone: no data, no GPU, no model construction.
+With ``--synthetic``, random Q and mixers are enough to exercise the identity
+when no checkpoint is available.
 
     python verify_absorption.py <ckpt.pt> [--in-chans 4] [--tol 1e-10]
+    python verify_absorption.py --synthetic
 """
 
 from __future__ import annotations
@@ -262,21 +265,62 @@ def check_synthesis(site: dict, q: torch.Tensor, seed: int) -> dict:
 
 # --------------------------------------------------------------------------- #
 
+def synthetic_state_dict(seed: int = 0) -> dict[str, torch.Tensor]:
+    """Random Q and mixers covering the two mixer regimes the paper contrasts.
+
+    One dense (groups=1) downsample, one grouped (groups=8) WaveletConv, and
+    one dense HaarUpsample.  Enough to show that the fold is exact in float64
+    and that only groups=8 leaks energy off the block-diagonal.
+    """
+    g = torch.Generator().manual_seed(seed)
+
+    def rand(*shape):
+        return torch.randn(*shape, generator=g)
+
+    sd: dict[str, torch.Tensor] = {}
+    # downsample, groups=1, C_in=4 -> 48
+    sd["vit.downsample_layers.0.0.wave.skew"] = rand(8, 8)
+    sd["vit.downsample_layers.0.0.mix.weight"] = rand(48, 32, 1, 1, 1)
+    sd["vit.downsample_layers.0.0.mix.bias"] = rand(48)
+    # WaveletConv3d, groups=8, C=48
+    sd["vit.gscs.0.proj.wave.skew"] = rand(8, 8)
+    sd["vit.gscs.0.proj.mix.weight"] = rand(384, 48, 1, 1, 1)
+    sd["vit.gscs.0.proj.mix.bias"] = rand(384)
+    # HaarUpsample, dense expansion 96 -> 8*48
+    sd["decoder5.wave.skew"] = rand(8, 8)
+    sd["decoder5.expand.weight"] = rand(384, 96, 1, 1, 1)
+    sd["decoder5.expand.bias"] = rand(384)
+    return sd
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("ckpt")
+    ap.add_argument("ckpt", nargs="?", default=None,
+                    help="LOWO checkpoint (.pt). Omit when using --synthetic.")
+    ap.add_argument("--synthetic", action="store_true",
+                    help="run on random Q,W (CPU, no file). Does not reproduce "
+                         "the paper's 7.3e-15 figure; use a real checkpoint "
+                         "for that.")
     ap.add_argument("--in-chans", type=int, default=4,
                     help="input modalities feeding downsample_layers.0")
     ap.add_argument("--tol", type=float, default=1e-10,
                     help="relative error below which the fold counts as exact")
     args = ap.parse_args()
 
-    sd = load_state_dict(args.ckpt)
+    if args.synthetic:
+        sd = synthetic_state_dict()
+        ckpt_label = "--synthetic (random Q, W)"
+    elif args.ckpt:
+        sd = load_state_dict(args.ckpt)
+        ckpt_label = args.ckpt
+    else:
+        ap.error("pass a checkpoint path, or --synthetic")
+
     sites = discover(sd, args.in_chans)
     if not sites:
         raise SystemExit("no HaarWavelet3D instances found in this checkpoint")
 
-    print(f"checkpoint: {args.ckpt}")
+    print(f"checkpoint: {ckpt_label}")
     print(f"wavelet sites: {len(sites)}\n")
 
     head = (f"{'site':<48}{'role':<15}{'mixer':<14}{'grp':>4}"
@@ -285,6 +329,7 @@ def main() -> None:
     print("-" * len(head))
 
     absorbable, identifiable, broken = [], [], []
+    fold_errors: list[float] = []
     for i, site in enumerate(sites):
         if site["kind"] == "orphan" or site["groups"] == 0:
             print(f"{site['path']:<48}{'(unresolved)':<15}")
@@ -300,6 +345,7 @@ def main() -> None:
               f"{dev:>10.4f}{res['off_block']:>11.4f}"
               f"{res['err_fold']:>11.2e}{res['err_proj']:>11.2e}")
 
+        fold_errors.append(res["err_fold"])
         if res["err_fold"] > args.tol:
             broken.append(site["path"])
         elif site["groups"] == 1 or res["off_block"] < 1e-12:
@@ -308,6 +354,9 @@ def main() -> None:
             identifiable.append((site["path"], dev, res["off_block"]))
 
     print()
+    if fold_errors:
+        print(f"max fold error: {max(fold_errors):.1e}")
+    print(f"inert (ρ≈0): {len(absorbable)}/{len(sites)}")
     print(f"absorbable   (fold exact, Q unidentifiable) : {len(absorbable)}")
     print(f"identifiable (fold escapes the group pattern): {len(identifiable)}")
     if broken:
