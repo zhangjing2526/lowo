@@ -1,14 +1,12 @@
-# LOWO: Structurally Orthogonal Wavelet Resampling for 3D Convolutions
+# Learned Orthogonal Wavelet Operator (LOWO): Identifiability of a Basis for 3D Resampling
 
-**[ICASSP 2027 submission]** Structural orthogonal wavelet resampling for 3D convolutions, and the
-identifiability of its learned basis.
+**[ICASSP 2027 submission]** Code for the operator and the checkpoint-only absorption audit.
 
 Code: [https://github.com/zhangjing2526/lowo](https://github.com/zhangjing2526/lowo)
 
 This repository contains the models, training/inference recipes and the exact
 checkpoint-level audit that supports the claims of the paper
-*"LOWO: Structurally Orthogonal Wavelet Resampling for 3D Convolutions and the
-Identifiability of Its Learned Basis"*.
+*"Learned Orthogonal Wavelet Operator (LOWO): Identifiability of a Basis for 3D Resampling"*.
 
 ```text
 ┌─────────────────────────────┐
