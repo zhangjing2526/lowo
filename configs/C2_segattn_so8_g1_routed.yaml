@@ -1,0 +1,43 @@
+# Paper arm C2
+# backbone: SegAttn + LOWO + routing probe
+# wavelet:  learnable Q ∈ SO(8) (same as C1 / A5)
+# mixer:    groups=1 + router
+# extra:    C1 + conditional routing
+# train:    python train_brats2021.py --config configs/C2_segattn_so8_g1_routed.yaml
+#
+# Train-time: soft mixture of both branches, g*attn + (1-g)*(x+mixer(x)).
+# Eval-time: model.set_hard_routing(True) picks one branch per block.
+# Best-model selection uses soft mean Dice; hard metrics are diagnostic.
+
+model: segattn_haar
+
+use_routing: true
+rf_prior_scale: 1.5
+router_hidden: null
+log_routing: true
+gate_log_interval: 25
+routing_threshold: 0.5
+
+batch_size: 1
+max_epoch: 500
+val_every: 2
+device: cuda:0
+master_port: 17771
+roi_size: [128, 128, 128]
+resume: true
+train_process: 12
+
+use_dice_ce: true
+deep_supervision: true
+wavelet_boundary_weight: 0.0
+
+wavelet_mode: so8
+learnable_wavelet: true
+gsc_checkpoint: false
+per_channel_stem: false
+per_channel_wavelet: false
+grouped_mix: false
+
+window_size: [7, 7, 7]
+num_heads: null
+attn_checkpoint: true

@@ -1,29 +1,32 @@
-# ─── Exp10: UNETR baseline (isotropic ViT encoder) ────────────────
-# 用法: python train_brats2021.py --config configs/exp10_unetr.yaml --tag unetr
+# Paper arm S1
+# backbone: SwinUNETR (MONAI, feature_size=48)
+# wavelet:  —
+# mixer:    —
+# train:    python train_swin_unetr_brats2021.py --config configs/S1_swin_unetr.yaml
 #
-# 先跑上界，再决定要不要训 500 epoch：
-#   python measure_unetr_attn_ceiling.py --device cuda:0 --csv unetr_attn_ceiling.csv
-# 若 e2e mixer_from=6 只有 ~1.0x，不要开训——官方 patch=16 的 N=512 让 QK^T 不够贵。
-#
-# 对照臂：12 层全是 SABlock，mixer_from=12。
+# Architecture matches the trained paper checkpoint: depths=[2,2,2,2],
+# num_heads=[3,6,12,24], CE loss, no deep supervision.
 
-model: unetr
-mixer_from: 12
-feature_size: 16
-hidden_size: 768
-mlp_dim: 3072
-num_heads: 12
+model: swin_unetr
+feature_size: 48
+depths: [2, 2, 2, 2]
+num_heads: [3, 6, 12, 24]
+norm_name: instance
+drop_rate: 0.0
+attn_drop_rate: 0.0
+dropout_path_rate: 0.0
+use_checkpoint: false
 
-batch_size: 1
+batch_size: 2
 max_epoch: 500
 val_every: 2
 device: cuda:0
-master_port: 17781
+master_port: 17760
 roi_size: [128, 128, 128]
 resume: true
-train_process: 12
+train_process: 18
 
-use_dice_ce: true
+use_dice_ce: false
 deep_supervision: false
 wavelet_boundary_weight: 0.0
 
@@ -32,6 +35,4 @@ learnable_wavelet: null
 gsc_checkpoint: null
 per_channel_stem: null
 per_channel_wavelet: null
-
-window_size: null
-attn_checkpoint: null
+grouped_mix: null

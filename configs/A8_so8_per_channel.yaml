@@ -1,6 +1,9 @@
-# ─── Exp8: SegMamba-Haar per-channel (每 MRI 通道独立小波基) ─────
-# 用法: python train_brats2021.py --config configs/exp8_segmamba_haar_perchannel.yaml --tag segmamba_haar_perch
-# 注意: 改变 stem state_dict 键 → 只能从头训练 (本表本来就是新训练, 无影响)
+# Paper arm A8
+# backbone: SegMamba + LOWO
+# wavelet:  learnable Q ∈ SO(8), per input channel
+# mixer:    per-channel
+# extra:    A5 + per-channel stem/wavelet (changes stem state_dict keys; train from scratch)
+# train:    python train_brats2021.py --config configs/A8_so8_per_channel.yaml
 
 model: segmamba_haar
 
@@ -22,6 +25,7 @@ learnable_wavelet: true
 gsc_checkpoint: false
 per_channel_stem: true
 per_channel_wavelet: true
+grouped_mix: false
 
 window_size: null
 num_heads: null

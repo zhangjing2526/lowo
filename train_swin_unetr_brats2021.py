@@ -16,7 +16,11 @@ Evaluation regions:
   ET (Enhancing Tumor): label 3
 """
 
+import argparse
+import shutil
+
 import numpy as np
+import yaml
 from light_training.dataloading.dataset import get_train_val_test_loader_from_train
 import torch
 import torch.nn as nn
@@ -83,13 +87,50 @@ print(f"[run] logdir={logdir}")
 augmentation = True
 
 env = "pytorch"
-resume = True  # True: auto-resume from model_save_path/resume_latest.pt if it exists
-max_epoch = 500
-batch_size = 2
-val_every = 2
 num_gpus = 1
-device = "cuda:0"
-roi_size = [128, 128, 128]
+
+# Overridden in __main__ from --config (defaults match the trained S1 run).
+_S1_CFG = {
+    "model": "swin_unetr",
+    "feature_size": 48,
+    "depths": [2, 2, 2, 2],
+    "num_heads": [3, 6, 12, 24],
+    "norm_name": "instance",
+    "drop_rate": 0.0,
+    "attn_drop_rate": 0.0,
+    "dropout_path_rate": 0.0,
+    "use_checkpoint": False,
+    "batch_size": 2,
+    "max_epoch": 500,
+    "val_every": 2,
+    "device": "cuda:0",
+    "master_port": 17760,
+    "roi_size": [128, 128, 128],
+    "resume": True,
+    "train_process": 18,
+}
+
+
+def load_s1_config(path: str) -> dict:
+    with open(path) as f:
+        cfg = yaml.safe_load(f) or {}
+    if cfg.get("model", "swin_unetr") != "swin_unetr":
+        raise ValueError(
+            f"{path} has model={cfg.get('model')!r}; S1 must be model: swin_unetr"
+        )
+    out = dict(_S1_CFG)
+    out.update({k: v for k, v in cfg.items() if v is not None})
+    if isinstance(out.get("roi_size"), tuple):
+        out["roi_size"] = list(out["roi_size"])
+    return out
+
+
+resume = _S1_CFG["resume"]
+max_epoch = _S1_CFG["max_epoch"]
+batch_size = _S1_CFG["batch_size"]
+val_every = _S1_CFG["val_every"]
+device = _S1_CFG["device"]
+roi_size = list(_S1_CFG["roi_size"])
 
 
 def func(m, epochs):
@@ -111,15 +152,15 @@ class BraTSTrainer(Trainer):
             img_size=roi_size,
             in_channels=4,
             out_channels=4,
-            feature_size=48,
-            depths=[2, 2, 2, 2],
-            num_heads=[3, 6, 12, 24],
-            norm_name="instance",
-            drop_rate=0.0,
-            attn_drop_rate=0.0,
-            dropout_path_rate=0.0,
+            feature_size=_S1_CFG["feature_size"],
+            depths=list(_S1_CFG["depths"]),
+            num_heads=list(_S1_CFG["num_heads"]),
+            norm_name=_S1_CFG["norm_name"],
+            drop_rate=_S1_CFG["drop_rate"],
+            attn_drop_rate=_S1_CFG["attn_drop_rate"],
+            dropout_path_rate=_S1_CFG["dropout_path_rate"],
             normalize=True,
-            use_checkpoint=False,
+            use_checkpoint=_S1_CFG["use_checkpoint"],
             spatial_dims=3,
         )
 
@@ -127,7 +168,7 @@ class BraTSTrainer(Trainer):
         self.best_mean_dice = 0.0
         self.ce = nn.CrossEntropyLoss()
         self.mse = nn.MSELoss()
-        self.train_process = 18
+        self.train_process = _S1_CFG["train_process"]
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-2, weight_decay=3e-5,
                                          momentum=0.99, nesterov=True)
 
@@ -254,8 +295,22 @@ class BraTSTrainer(Trainer):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="SwinUNETR BraTS2021 — paper arm S1")
+    parser.add_argument("--config", default="configs/S1_swin_unetr.yaml",
+                        help="S1 YAML (must be model: swin_unetr)")
+    args = parser.parse_args()
+
+    _S1_CFG.update(load_s1_config(args.config))
+    resume = _S1_CFG["resume"]
+    max_epoch = _S1_CFG["max_epoch"]
+    batch_size = _S1_CFG["batch_size"]
+    val_every = _S1_CFG["val_every"]
+    device = _S1_CFG["device"]
+    roi_size = list(_S1_CFG["roi_size"])
+
     os.makedirs(logdir, exist_ok=True)
     os.makedirs(model_save_path, exist_ok=True)
+    shutil.copy2(args.config, os.path.join(logdir, "config.yaml"))
 
     trainer = BraTSTrainer(env_type=env,
                            max_epochs=max_epoch,
@@ -264,7 +319,7 @@ if __name__ == "__main__":
                            logdir=logdir,
                            val_every=val_every,
                            num_gpus=num_gpus,
-                           master_port=17760,
+                           master_port=int(_S1_CFG["master_port"]),
                            training_script=__file__)
 
     train_ds, val_ds, test_ds = get_train_val_test_loader_from_train(data_dir)

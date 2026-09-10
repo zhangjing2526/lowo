@@ -1,6 +1,8 @@
-# ─── Exp7: SegMamba-Haar theta (3-DOF 可分离, vs so8) ────────────
-# 用法: python train_brats2021.py --config configs/exp7_segmamba_haar_theta.yaml --tag segmamba_haar_theta
-# so8(28-DOF 不可分离) vs theta(3-DOF 逐轴可分离) 的参数化消融
+# Paper arm A3
+# backbone: SegMamba + LOWO
+# wavelet:  learnable θ (3 DOF, axis-separable)
+# mixer:    groups=1
+# train:    python train_brats2021.py --config configs/A3_theta_g1.yaml
 
 model: segmamba_haar
 
@@ -22,6 +24,7 @@ learnable_wavelet: true
 gsc_checkpoint: false
 per_channel_stem: false
 per_channel_wavelet: false
+grouped_mix: false
 
 window_size: null
 num_heads: null

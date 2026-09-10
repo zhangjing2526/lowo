@@ -1,6 +1,8 @@
-# ─── Exp6: SegMamba-Haar 固定 Haar (learnable_wavelet=false) ─────
-# 用法: python train_brats2021.py --config configs/exp6_segmamba_haar_fixed.yaml --tag segmamba_haar_fixed
-# 固定 vs 可学习消融: so8 模式下 skew 冻结为 0 → Q=I → 恰为标准固定 Haar
+# Paper arm A5
+# backbone: SegMamba + LOWO
+# wavelet:  learnable Q ∈ SO(8) (28 DOF)
+# mixer:    groups=1
+# train:    python train_brats2021.py --config configs/A5_so8_g1.yaml
 
 model: segmamba_haar
 
@@ -8,7 +10,7 @@ batch_size: 2
 max_epoch: 500
 val_every: 2
 device: cuda:0
-master_port: 17764
+master_port: 17760
 roi_size: [128, 128, 128]
 resume: true
 train_process: 12
@@ -18,10 +20,11 @@ deep_supervision: true
 wavelet_boundary_weight: 0.0
 
 wavelet_mode: so8
-learnable_wavelet: false
+learnable_wavelet: true
 gsc_checkpoint: false
 per_channel_stem: false
 per_channel_wavelet: false
+grouped_mix: false
 
 window_size: null
 num_heads: null

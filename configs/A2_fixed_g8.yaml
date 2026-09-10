@@ -1,20 +1,10 @@
-# ─── Exp6d: SegMamba-Haar so8 FIXED but with groups=8 mixer ─────────
-# 用途：干净归因 so8live (0.9317) 相对 fixed Haar (0.9268) 的差距到底来自
-#       "Encoder 混合器 groups=1→8" 还是 "so8 的 Q 可学"。
+# Paper arm A2
+# backbone: SegMamba + LOWO
+# wavelet:  so8 + learnable_wavelet=false  →  fixed Haar (Q=I, θ=π/4)
+# mixer:    groups=8
+# train:    python train_brats2021.py --config configs/A2_fixed_g8.yaml
 #
-# 与 exp6c (segmamba_haar_so8live) 配置完全相同，唯一区别：
-#   - learnable_wavelet: false   # Q 冻结为 I（= 固定 Haar），与 so8live 的唯一差异点
-#   - grouped_mix: true          # Encoder HaarDownsample.mix 强制 groups=8，和 so8live 对齐
-#
-# 因此 本配置 vs exp6c 的差异 = 纯可学性（Q 固定 vs 可学），其余（含 decoder）完全一致，
-# 可直接作为论文主表的干净消融 arm。
-#
-# 注意：d1b7107 把硬编码 groups=8 改成了 grouped_mix 开关且默认 off，
-#       此处必须显式写 grouped_mix: true，否则退回 groups=1（又和旧 fixed 一样）。
-#
-# 用法（baseline 脚本，与续训 so8live 同款入口）：
-#   python train_brats2021.py --config configs/exp6d_segmamba_haar_fixed_g8.yaml --tag segmamba_haar_fixed_g8
-# 前提：E:\segMamba\logs 需 junction 到 G:\material\天枢\mamba\logs（否则找不到 resume 点 / 落错目录）。
+# Paired with A6: same mixer (groups=8); only learnable_wavelet differs.
 
 model: segmamba_haar
 

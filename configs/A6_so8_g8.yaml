@@ -1,0 +1,33 @@
+# Paper arm A6
+# backbone: SegMamba + LOWO
+# wavelet:  learnable Q ∈ SO(8) (28 DOF)
+# mixer:    groups=8
+# train:    python train_brats2021.py --config configs/A6_so8_g8.yaml
+#
+# Paired with A2: same mixer (groups=8); only learnable_wavelet differs.
+
+model: segmamba_haar
+
+batch_size: 2
+max_epoch: 500
+val_every: 2
+device: cuda:0
+master_port: 17766
+roi_size: [128, 128, 128]
+resume: true
+train_process: 12
+
+use_dice_ce: true
+deep_supervision: true
+wavelet_boundary_weight: 0.0
+
+wavelet_mode: so8
+learnable_wavelet: true
+gsc_checkpoint: false
+per_channel_stem: false
+per_channel_wavelet: false
+grouped_mix: true
+
+window_size: null
+num_heads: null
+attn_checkpoint: null

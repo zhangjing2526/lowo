@@ -1,6 +1,9 @@
-# ─── Exp4: SegMamba-Haar + wavelet boundary loss (wb=0.1) ────────
-# 用法: python train_brats2021.py --config configs/exp4_segmamba_haar_wb.yaml --tag segmamba_haar_wb
-# 论文里作为 "+ wavelet boundary loss" 的正交增强单独成行
+# Paper arm A7
+# backbone: SegMamba + LOWO
+# wavelet:  learnable Q ∈ SO(8) (28 DOF)
+# mixer:    groups=1
+# extra:    wavelet-boundary loss weight 0.1  (A5 + this loss)
+# train:    python train_brats2021.py --config configs/A7_so8_g1_wbloss.yaml
 
 model: segmamba_haar
 
@@ -22,6 +25,7 @@ learnable_wavelet: true
 gsc_checkpoint: false
 per_channel_stem: false
 per_channel_wavelet: false
+grouped_mix: false
 
 window_size: null
 num_heads: null

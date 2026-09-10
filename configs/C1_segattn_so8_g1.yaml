@@ -1,0 +1,32 @@
+# Paper arm C1
+# backbone: SegAttn + LOWO  (Swin window-attention sequence mixer)
+# wavelet:  learnable Q ∈ SO(8) (same as A5)
+# mixer:    groups=1
+# train:    python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml
+#           (or train_brats2021_attn.py — same architecture, no mamba_ssm import)
+
+model: segattn_haar
+
+batch_size: 1
+max_epoch: 500
+val_every: 2
+device: cuda:0
+master_port: 17761
+roi_size: [128, 128, 128]
+resume: true
+train_process: 12
+
+use_dice_ce: true
+deep_supervision: true
+wavelet_boundary_weight: 0.0
+
+wavelet_mode: so8
+learnable_wavelet: true
+gsc_checkpoint: false
+per_channel_stem: false
+per_channel_wavelet: false
+grouped_mix: false
+
+window_size: [7, 7, 7]
+num_heads: null
+attn_checkpoint: true

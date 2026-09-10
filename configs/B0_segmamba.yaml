@@ -1,6 +1,8 @@
-# ─── Exp1: SegMamba 基线 (baseline, 主表对照) ─────────────────────
-# 用法: python train_brats2021.py --config configs/exp1_segmamba.yaml --tag segmamba
-# 协议: dicece + ds, 无 wavelet boundary loss (wb=0)
+# Paper arm B0
+# backbone: SegMamba (learned stride-2 conv, no LOWO)
+# wavelet:  —
+# mixer:    —
+# train:    python train_brats2021.py --config configs/B0_segmamba.yaml
 
 model: segmamba
 
@@ -11,7 +13,7 @@ device: cuda:0
 master_port: 17759
 roi_size: [128, 128, 128]
 resume: true
-train_process: 12        # 8 卡并行时降 worker; CPU 核数富余可改回 18
+train_process: 12
 
 use_dice_ce: true
 deep_supervision: true
@@ -22,6 +24,7 @@ learnable_wavelet: null
 gsc_checkpoint: null
 per_channel_stem: null
 per_channel_wavelet: null
+grouped_mix: null
 
 window_size: null
 num_heads: null

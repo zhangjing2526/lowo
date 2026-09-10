@@ -28,26 +28,40 @@ Identifiability of Its Learned Basis"*.
 | `model_segmamba/segmamba_haar.py` | SegMamba + LOWO (encoder/decoder wiring). |
 | `model_segmamba/segmamba_attn.py` | SegAttn + LOWO (Swin-attention sequence mixer). |
 | `model_segmamba/segmamba.py` | Original SegMamba backbone (Mamba SSM mixer) — **B0** & the low-precision reference. |
-| `configs/` | One YAML per paper arm (B0, S1, A1, A2, A3, A5, A6, A7, A8, C1, C2). |
+| `configs/` | One YAML per paper arm. IDs match the paper; filenames encode the factors (wavelet × mixer). |
 | `scripts/` | Training / inference / evaluation / metric scripts. |
 | `verify_absorption.py` | **§3.2 exact audit** — folds the learned Q into the subband mixer and reproduces each trained network to float64 round-off *from the checkpoint alone* (CPU, no data, no GPU). |
 | `analysis/absorption_sites.csv` | Per-site audit records for the nine trained checkpoints (drift ‖Q−I‖_F, escape fraction ρ). |
 
 ## Paper arms and their configs
 
-| ID | Configuration | Wavelet | Subband mixer | Config file |
-|---|---|---|---|---|
-| B0 | SegMamba, learned strided conv (baseline) | — | — | `configs/B0_segmamba.yaml` |
-| S1 | SwinUNETR baseline | — | — | `configs/S1_swin_unetr.yaml` |
-| A1 | fixed Haar | fixed (θ=π/4, Q=I) | groups=1 | `configs/A1_fixed.yaml` |
-| A2 | **fixed Haar (best)** | fixed | groups=8 | `configs/A2_fixed_g8.yaml` |
-| A3 | theta | learnable θ (3 DOF) | groups=1 | `configs/A3_theta.yaml` |
-| A5 | so8 | learnable Q (28 DOF) | groups=1 | `configs/A5_so8.yaml` |
-| A6 | so8 | learnable Q | groups=8 | `configs/A6_so8_live.yaml` |
-| A7 | so8 + wavelet-boundary loss | learnable Q | groups=1 | `configs/A7_so8_wb.yaml` |
-| A8 | so8, per-channel mixer+wavelet | learnable Q (per-channel) | per-channel | `configs/A8_per_channel.yaml` |
-| C1 | SegAttn + Haar | learnable Q | groups=1 | `configs/C1_segattn_haar.yaml` |
-| C2 | SegAttn + routing | learnable Q | groups=1 + router | `configs/C2_segattn_routed.yaml` |
+Paper IDs are unchanged. Filenames encode the ablation factors so A1–A6 read as a grid, not a flat list.
+
+`wavelet_mode: so8` + `learnable_wavelet: false` is exactly standard Haar (`Q = I`, `θ = π/4`). A4 (learnable θ × `groups=8`) was not released.
+
+### Baselines
+
+| ID | Backbone | Config |
+|---|---|---|
+| B0 | SegMamba, learned stride-2 conv | `configs/B0_segmamba.yaml` |
+| S1 | SwinUNETR | `configs/S1_swin_unetr.yaml` |
+
+### Main ablation (SegMamba + LOWO)
+
+| | mixer `groups=1` | mixer `groups=8` |
+|---|---|---|
+| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` |
+| learnable θ (3 DOF) | **A3** `configs/A3_theta_g1.yaml` | **A4** not released |
+| learnable `Q ∈ SO(8)` (28 DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
+
+### Probes (one extra factor on top of a main arm)
+
+| ID | Added on | Extra factor | Config |
+|---|---|---|---|
+| A7 | A5 | wavelet-boundary loss (`weight=0.1`) | `configs/A7_so8_g1_wbloss.yaml` |
+| A8 | A5 | per-channel wavelet + mixer | `configs/A8_so8_per_channel.yaml` |
+| C1 | A5 wavelet | SegAttn backbone (window attention) | `configs/C1_segattn_so8_g1.yaml` |
+| C2 | C1 | routing probe | `configs/C2_segattn_so8_g1_routed.yaml` |
 
 ## Quick start
 
@@ -76,7 +90,7 @@ max fold error: 7.3e-15
 inert (ρ≈0): 8/16
 ```
 
-### Reproduce a paper arm (example: A6, so8 + groups=8)
+### Reproduce a paper arm (example: A6, learnable Q + groups=8)
 
 ```bash
 # 1. data -> ./data/fullres/train (BraTS2021, labels remapped 4→3)
@@ -84,13 +98,13 @@ python scripts/rename_brats2021_data.py
 python scripts/preprocessing_brats2021.py
 
 # 2. train (500 epochs, DiceCE + deep supervision)
-python train_brats2021.py --config configs/A6_so8_live.yaml --tag segmamba_haar_so8_live
+python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8
 
 # 3. inference (sliding window, overlap 0.7, 8-way mirror TTA)
-python predict.py --ckpt logs/segmamba_haar_so8_live/.../best_model_*.pt
+python predict.py --ckpt logs/segmamba_haar_so8_dicece_ds/a6_so8_g8_s123/model/best_model_*.pt
 
 # 4. metrics (Dice / HD95, BraTS convention)
-python compute_metrics.py --pred_name segmamba_haar_so8_live
+python compute_metrics.py --pred_name a6_so8_g8
 ```
 
 All arms share the identical evaluation protocol (single split, same 250-case test
@@ -115,15 +129,15 @@ comparable.
 |---|---|
 | `python train_brats2021.py --config configs/B0_segmamba.yaml` | B0 |
 | `python train_swin_unetr_brats2021.py --config configs/S1_swin_unetr.yaml` | S1 |
-| `python train_brats2021.py --config configs/A1_fixed.yaml` | A1 |
+| `python train_brats2021.py --config configs/A1_fixed_g1.yaml` | A1 |
 | `python train_brats2021.py --config configs/A2_fixed_g8.yaml` | A2 |
-| `python train_brats2021.py --config configs/A3_theta.yaml` | A3 |
-| `python train_brats2021.py --config configs/A5_so8.yaml` | A5 |
-| `python train_brats2021.py --config configs/A6_so8_live.yaml` | A6 |
-| `python train_brats2021.py --config configs/A7_so8_wb.yaml` | A7 |
-| `python train_brats2021.py --config configs/A8_per_channel.yaml` | A8 |
-| `python train_brats2021_attn.py --config configs/C1_segattn_haar.yaml` | C1 |
-| `python train_brats2021_attn.py --config configs/C2_segattn_routed.yaml` | C2 |
+| `python train_brats2021.py --config configs/A3_theta_g1.yaml` | A3 |
+| `python train_brats2021.py --config configs/A5_so8_g1.yaml` | A5 |
+| `python train_brats2021.py --config configs/A6_so8_g8.yaml` | A6 |
+| `python train_brats2021.py --config configs/A7_so8_g1_wbloss.yaml` | A7 |
+| `python train_brats2021.py --config configs/A8_so8_per_channel.yaml` | A8 |
+| `python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml` | C1 |
+| `python train_brats2021.py --config configs/C2_segattn_so8_g1_routed.yaml` | C2 |
 
 ## License
 

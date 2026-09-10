@@ -24,12 +24,10 @@ Evaluation regions:
   ET (Enhancing Tumor): label 3
 
 Usage:
-    python train_brats2021.py --config configs/segmamba.yaml
-    python train_brats2021.py --config configs/segmamba_haar.yaml
-    python train_brats2021.py --config configs/segattn_haar.yaml
-    # custom experiment: copy a yaml, edit params, run
-    cp configs/segattn_haar.yaml configs/my_exp.yaml
-    python train_brats2021.py --config configs/my_exp.yaml
+    python train_brats2021.py --config configs/B0_segmamba.yaml
+    python train_brats2021.py --config configs/A2_fixed_g8.yaml
+    python train_brats2021.py --config configs/A6_so8_g8.yaml
+    python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml
 """
 
 import argparse
@@ -581,7 +579,7 @@ if __name__ == "__main__":
         description="Unified BraTS2021 training: SegMamba / SegMamba-Haar / SegAttn-Haar",
     )
     parser.add_argument("--config", required=True,
-                        help="Path to YAML config file (e.g. configs/segattn_haar.yaml)")
+                        help="Path to YAML config file (e.g. configs/A6_so8_g8.yaml)")
     parser.add_argument("--tag", default=None,
                         help="Deterministic run-tag (logdir subfolder); enables resume across restarts")
     parser.add_argument("--seed", type=int, default=123,
