@@ -1,8 +1,8 @@
 """Inference (full-volume sliding-window + mirror TTA) for SegMamba-Haar on BraTS2021.
 
 Mirrors predict.py but loads the Haar variant and a LOCAL Haar checkpoint.
-The original predict.py pointed at the author's machine (/home/xingzhaohu/...)
-and at the baseline SegMamba, so it could not evaluate Haar runs on this machine.
+The original upstream predict.py pointed at a machine-specific path and at
+the baseline SegMamba, so it could not evaluate Haar runs on this machine.
 
 Run after training:
     python predict_haar.py

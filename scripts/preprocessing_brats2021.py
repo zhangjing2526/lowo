@@ -25,10 +25,12 @@ Modalities (same order as BraTS2023):
   t1ce.nii.gz   (corresponds to BraTS2023 t1c)
 """
 
+import argparse
+import os
+
 from light_training.preprocessing.preprocessors.preprocessor_mri import MultiModalityPreprocessor
 import numpy as np
 import SimpleITK as sitk
-import os
 from light_training.preprocessing.preprocessors.default_preprocessor import DefaultPreprocessor
 from batchgenerators.utilities.file_and_folder_operations import *
 
@@ -94,7 +96,9 @@ class BraTS2021Preprocessor(MultiModalityPreprocessor):
 
 
 # BraTS2021 data paths
-base_dir = "/data2/zhangjing/data/mamba/brats2021_extracted"
+base_dir = os.environ.get(
+    "BRATS2021_DATA_DIR", "./data/fullres/raw/brats2021_extracted"
+)
 image_dir = "."  # cases are directly under brats2021_extracted
 
 # Modality filenames (same order as BraTS2023: t2w, t2f, t1n, t1c)
@@ -137,5 +141,15 @@ def plan():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Preprocess BraTS2021 data (labels remapped 4->3)."
+    )
+    parser.add_argument(
+        "--data-dir",
+        default=os.environ.get("BRATS2021_DATA_DIR", "./data/fullres/raw/brats2021_extracted"),
+        help="Root directory containing BraTS2021 cases (overrides BRATS2021_DATA_DIR env var).",
+    )
+    args = parser.parse_args()
+    base_dir = args.data_dir
     plan()
     process_train()

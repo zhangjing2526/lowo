@@ -51,8 +51,8 @@ class BraTSTrainer(Trainer):
                         feat_size=[48, 96, 192, 384])
 
         # local baseline checkpoint (auto-discover highest-Dice best_model); the
-        # original hard-coded author path (/home/xingzhaohu/...) is not on this
-        # machine. Override with BASELINE_CKPT env var if needed.
+        # original upstream path is not on this machine. Override with
+        # BASELINE_CKPT env var if needed.
         cands = sorted(
             glob.glob("./logs/segmamba_brats2021_dicece/**/model/best_model_*.pt", recursive=True),
             key=lambda p: float(re.search(r"best_model_([0-9.]+)\.pt$", p).group(1))
