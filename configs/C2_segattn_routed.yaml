@@ -1,0 +1,47 @@
+# ─── Exp3-R: SegAttn-Haar + Routing Probe (软超网探针 v1.1) ─────────
+# 用法: python train_brats2021.py --config configs/exp3_segattn_haar_routed.yaml --tag segattn_haar_routed
+#
+# ⚠️ 语义（诚实版）：训练时是**软混合超网**（两条支路都算，g*a + (1-g)*(x+mixer(x))），
+#   比纯 WindowAttn 更贵，不省算力。它回答两个探针问题：
+#   (a) gate 是否按感受野先验分 stage 分化；(b) Dice 是否立刻崩。
+#   「深层关掉 attention 省算力」的**条件计算**语义在 eval 时才有：
+#   model.set_hard_routing(True) 后每 block 二选一、只算选中支路（真省 FLOPs）。
+#   协议已自动化: validation_step 每次 val 同时跑 soft + hard 两遍,
+#   validation_end 自动写 hard/tc /wt /et /mean_dice /skip_frac + stdout。
+#   best-model 选择仍用 soft mean_dice, hard 指标纯诊断。
+#   per-token 派发未实现：窗口注意力的原子是 7³ 窗口，token 级硬路由无法跳计算。
+#
+# mixer 支路带残差 x + mixer(x)，与 Swin block 内部残差对称，避免 gate→0 表征跳变。
+
+model: segattn_haar
+
+# ── 路由开关 ──
+use_routing: true           # 启用条件路由 (默认 False 不影响其它 arm)
+rf_prior_scale: 1.5         # 先验斜率: stage0=+1.5(偏attention) -> stage3=-1.5(偏mixer)
+router_hidden: null         # null=单层 Linear 门控; 设整数则加一层隐藏
+log_routing: true           # 把 gate 统计写进 tensorboard
+gate_log_interval: 25       # 每 25 个 step 采集一次 (collect 才做 GPU->host 同步)
+routing_threshold: 0.5      # hard eval 时 block 级 gate 均值 > 此值才用 attention
+
+batch_size: 1                # 复用梯度累积修复 (bs1 -> accum=2, 等效batch=2)
+max_epoch: 500               # 续跑: 50 -> 500, 与对照 segattn_haar 对齐
+val_every: 2
+device: cuda:0
+master_port: 17771
+roi_size: [128, 128, 128]
+resume: true                 # 续跑: 从 resume_latest.pt (.pt 含 model+optimizer) 接续
+train_process: 12
+
+use_dice_ce: true
+deep_supervision: true
+wavelet_boundary_weight: 0.0
+
+wavelet_mode: so8
+learnable_wavelet: true
+gsc_checkpoint: false
+per_channel_stem: false
+per_channel_wavelet: false
+
+window_size: [7, 7, 7]
+num_heads: null
+attn_checkpoint: true        # bs1 必须开

@@ -1,0 +1,23 @@
+# checkpoints / logs / generated artifacts
+logs/
+test/
+_checkpoints/
+*.pt
+*.pth
+*.onnx
+*.npy
+
+# analysis outputs
+analysis/absorption_sites.csv
+figs/*.pdf
+figs/*.png
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# misc
+.DS_Store

@@ -1,0 +1,28 @@
+# ─── Exp2: SegMamba-Haar 主 arm (严格替换对照, wb=0) ─────────────
+# 用法: python train_brats2021.py --config configs/exp2_segmamba_haar.yaml --tag segmamba_haar
+# so8 + learnable, 无边界损失 → 协议与 baseline 逐字节一致 (干净归因于架构)
+
+model: segmamba_haar
+
+batch_size: 2
+max_epoch: 500
+val_every: 2
+device: cuda:0
+master_port: 17760
+roi_size: [128, 128, 128]
+resume: true
+train_process: 12
+
+use_dice_ce: true
+deep_supervision: true
+wavelet_boundary_weight: 0.0
+
+wavelet_mode: so8
+learnable_wavelet: true
+gsc_checkpoint: false
+per_channel_stem: false
+per_channel_wavelet: false
+
+window_size: null
+num_heads: null
+attn_checkpoint: null
