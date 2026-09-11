@@ -50,7 +50,7 @@ CKPTS = [
     ('A3', 'theta, g1',
      rf'{LOGS}\segmamba_haar_dicece_ds\segmamba_haar_theta\model\best_model_0.9251.pt'),
     ('A4', 'theta, g8',
-     rf'{ROOT}\test\segmamba_haar_theta_g8_s123_s123\model\best_model.pt'),
+     rf'{LOGS}\segmamba_haar_dicece_ds\segmamba_haar_theta_g8_s123_s123\model\best_model_0.9224.pt'),
     ('A5', 'so8, g1',
      rf'{LOGS}\segmamba_haar_so8_dicece_ds\segmamba_haar\model\best_model_0.9225.pt'),
     ('A6', 'so8, g8',
@@ -109,8 +109,12 @@ def main() -> None:
                 continue
             q = va.orthogonal_factor(sd, site['wave'])
             drift = (q - torch.eye(8, dtype=va.DT)).norm().item()
-            res = (va.check_synthesis if site['kind'] == 'synthesis'
-                   else va.check_analysis)(site, q, seed=1234 + i)
+            if site['kind'] == 'synthesis':
+                res = va.check_synthesis(site, q, seed=1234 + i)
+            elif site['kind'] == 'waveletconv':
+                res = va.check_waveletconv(site, q, seed=1234 + i)
+            else:
+                res = va.check_analysis(site, q, seed=1234 + i)
             rows.append(dict(arm=arm, label=label, site=site['path'],
                              role=site['role'], groups=site['groups'],
                              drift=drift, rho=res['off_block'],

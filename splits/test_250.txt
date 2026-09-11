@@ -1,3 +1,8 @@
+# Internal held-out subset of the BraTS2021 training pool (250 cases).
+# NOT the official BraTS test set. One CaseID per line.
+# This is the frozen list used for Table 1 (eval --force_ethr 50).
+# Source: training-host stdout of logs/segmamba_dicece_ds/segmamba
+# (dataset.py printed sorted(test_datalist) after glob+shuffle, seed=42).
 BraTS2021_00011
 BraTS2021_00014
 BraTS2021_00020

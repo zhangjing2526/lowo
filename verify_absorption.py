@@ -21,6 +21,11 @@ Consequences, both checked here against real checkpoints:
 The decoder's ``HaarUpsample`` applies Q after its dense expansion, so there the
 fold is ``W' = (Q^T kron I_Cout) @ W`` and the bias transforms as well.
 
+``WaveletConv3d`` is a sandwich ``idwt(W dwt(x))`` with the *same* Q on both
+sides.  With ``R = Q kron I_C`` the Haar-coordinate mixer is
+``W' = R^T @ W @ R``, ``b' = R^T @ b`` --- not the one-sided ``W @ R`` that
+applies to a lone analysis mixer.
+
 Absorption is assessed layer-locally, which is what matters here: the operator
 immediately following each mixer is a channel-wise normalisation, so a
 cross-channel linear factor cannot be commuted any further downstream.
@@ -181,7 +186,7 @@ def discover(sd: dict[str, torch.Tensor], in_chans: int) -> list[dict]:
             c = w.shape[0] // 8
             groups, rem = divmod(8 * c, w.shape[1])
             sites.append(_site(parent, "waveletconv" if not rem else "waveletconv?",
-                               "analysis", sd, f"{parent}.mix.weight", wave,
+                               "waveletconv", sd, f"{parent}.mix.weight", wave,
                                c, groups))
         elif f"{parent}.expand.weight" in sd:
             # HaarUpsample: Conv3d(in, 8*Cout, 1), always dense
@@ -264,6 +269,31 @@ def check_synthesis(site: dict, q: torch.Tensor, seed: int) -> dict:
             "err_proj": float("nan")}
 
 
+def check_waveletconv(site: dict, q: torch.Tensor, seed: int) -> dict:
+    """Fold Q through DWT and IDWT: W' = R^T W R, b' = R^T b, R = Q ⊗ I_C."""
+    c_in, out_ch, groups = site["c_in"], site["w"].shape[0], site["groups"]
+    w = dense_form(site["w"].to(DT), groups, c_in)
+    bias = site["b"].to(DT) if site["b"] is not None else None
+    R = torch.kron(q, torch.eye(c_in, dtype=DT))
+    folded = R.T @ w @ R
+    folded_b = (R.T @ bias) if bias is not None else None
+
+    mask = group_mask(out_ch, 8 * c_in, groups)
+    off = (folded[~mask].norm() / folded.norm()).item() if groups > 1 else 0.0
+
+    g = torch.Generator().manual_seed(seed)
+    x = torch.randn(1, c_in, 8, 8, 8, generator=g, dtype=DT)
+    k_q = q @ K_HAAR
+    ref = idwt(apply1x1(dwt(x, k_q), w, bias), k_q)
+    fold = idwt(apply1x1(dwt(x, K_HAAR), folded, folded_b), K_HAAR)
+    proj = idwt(apply1x1(dwt(x, K_HAAR), folded * mask, folded_b), K_HAAR)
+
+    scale = ref.abs().max().clamp_min(1e-30)
+    return {"off_block": off,
+            "err_fold": ((ref - fold).abs().max() / scale).item(),
+            "err_proj": ((ref - proj).abs().max() / scale).item()}
+
+
 # --------------------------------------------------------------------------- #
 
 def synthetic_state_dict(seed: int = 0) -> dict[str, torch.Tensor]:
@@ -283,7 +313,7 @@ def synthetic_state_dict(seed: int = 0) -> dict[str, torch.Tensor]:
     sd["vit.downsample_layers.0.0.wave.skew"] = rand(8, 8)
     sd["vit.downsample_layers.0.0.mix.weight"] = rand(48, 32, 1, 1, 1)
     sd["vit.downsample_layers.0.0.mix.bias"] = rand(48)
-    # WaveletConv3d, groups=8, C=48
+    # WaveletConv3d, groups=8, C=48 (DWT and IDWT share Q; fold is R^T W R)
     sd["vit.gscs.0.proj.wave.skew"] = rand(8, 8)
     sd["vit.gscs.0.proj.mix.weight"] = rand(384, 48, 1, 1, 1)
     sd["vit.gscs.0.proj.mix.bias"] = rand(384)
@@ -338,8 +368,12 @@ def main() -> None:
             continue
         q = orthogonal_factor(sd, site["wave"])
         dev = (q - torch.eye(8, dtype=DT)).norm().item()
-        res = (check_synthesis if site["kind"] == "synthesis"
-               else check_analysis)(site, q, seed=1234 + i)
+        if site["kind"] == "synthesis":
+            res = check_synthesis(site, q, seed=1234 + i)
+        elif site["kind"] == "waveletconv":
+            res = check_waveletconv(site, q, seed=1234 + i)
+        else:
+            res = check_analysis(site, q, seed=1234 + i)
 
         shape = "x".join(str(d) for d in site["w"].shape[:2])
         print(f"{site['path']:<48}{site['role']:<15}{shape:<14}{site['groups']:>4}"

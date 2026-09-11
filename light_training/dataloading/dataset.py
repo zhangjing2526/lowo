@@ -241,22 +241,145 @@ def get_train_val_test_loader_from_split_json(data_dir, split_json_file):
     return loader
 
 
-def get_train_val_test_loader_from_train(data_dir, train_rate=0.7, val_rate=0.1, test_rate=0.2, seed=42):
-    ## train all labeled data 
-    ## fold denote the validation data in training data
-    all_paths = glob.glob(f"{data_dir}/*.npz")
-    # fold_data = get_kfold_data(all_paths, 5)[fold]
+# Paper split lives in lowo/splits/. glob.glob() order is readdir() order and
+# is not stable across machines, so shuffle(seed=42) alone does not reproduce
+# the 875/125/250 partition used in the paper. Frozen case lists are the
+# source of truth; they are an internal held-out subset of the BraTS2021
+# training pool, not the official BraTS test set.
+_DEFAULT_SPLIT_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "splits")
+)
 
-    train_number = int(len(all_paths) * train_rate)
-    val_number = int(len(all_paths) * val_rate)
-    test_number = int(len(all_paths) * test_rate)
-    random.seed(seed)
-    # random_state = random.random
-    random.shuffle(all_paths)
 
-    train_datalist = all_paths[:train_number]
-    val_datalist = all_paths[train_number: train_number + val_number]
-    test_datalist = all_paths[-test_number:] 
+def _case_stem(path_or_name):
+    return os.path.splitext(os.path.basename(str(path_or_name)))[0]
+
+
+def read_case_list(list_path):
+    """One CaseID per line; '#' comments and blank lines ignored."""
+    names = []
+    with open(list_path, encoding="utf-8") as f:
+        for line in f:
+            s = line.strip()
+            if s and not s.startswith("#"):
+                names.append(_case_stem(s))
+    return names
+
+
+def write_case_list(list_path, names, header_lines=None):
+    os.makedirs(os.path.dirname(os.path.abspath(list_path)) or ".", exist_ok=True)
+    with open(list_path, "w", encoding="utf-8") as f:
+        for h in header_lines or []:
+            f.write(f"# {h}\n")
+        for n in names:
+            f.write(f"{_case_stem(n)}\n")
+
+
+def _npz_index(data_dir):
+    return {_case_stem(p): p for p in glob.glob(os.path.join(data_dir, "*.npz"))}
+
+
+def _paths_from_names(index, names, tag):
+    missing = [n for n in names if n not in index]
+    if missing:
+        raise FileNotFoundError(
+            f"{tag}: {len(missing)}/{len(names)} case(s) not found under the "
+            f"npz directory. e.g. {missing[:5]}")
+    return [index[n] for n in names]
+
+
+def _dump_split(dump_dir, train_names, val_names, test_names):
+    if not dump_dir:
+        return
+    header = [
+        "Internal held-out subset of the BraTS2021 training pool.",
+        "Not the official BraTS test set. One CaseID per line.",
+    ]
+    write_case_list(os.path.join(dump_dir, "train_875.txt"), train_names,
+                    header + [f"{len(train_names)} training cases"])
+    write_case_list(os.path.join(dump_dir, "val_125.txt"), val_names,
+                    header + [f"{len(val_names)} validation cases"])
+    write_case_list(os.path.join(dump_dir, "test_250.txt"), test_names,
+                    header + [f"{len(test_names)} held-out cases"])
+    print(f"[split] wrote train/val/test lists under {dump_dir}")
+
+
+def get_train_val_test_loader_from_train(
+        data_dir, train_rate=0.7, val_rate=0.1, test_rate=0.2, seed=42,
+        split_dir=None, dump_split_dir=None):
+    """Load the paper split from frozen case lists when present.
+
+    Fallback (no lists): sort glob, then shuffle with ``seed``. That fallback
+    is portable across machines but is *not* the paper partition, because the
+    original run shuffled an unsorted glob. Frozen ``test_250.txt`` /
+    ``val_125.txt`` / ``train_875.txt`` under ``split_dir`` are required to
+    reproduce Table 1.
+    """
+    index = _npz_index(data_dir)
+    if not index:
+        raise FileNotFoundError(f"no *.npz cases under {data_dir}")
+
+    split_dir = _DEFAULT_SPLIT_DIR if split_dir is None else split_dir
+    list_files = {
+        "train": os.path.join(split_dir, "train_875.txt"),
+        "val": os.path.join(split_dir, "val_125.txt"),
+        "test": os.path.join(split_dir, "test_250.txt"),
+    }
+    frozen = {k: read_case_list(p) for k, p in list_files.items()
+              if os.path.isfile(p)}
+    if "test" in frozen:
+        missing = [n for n in frozen["test"] if n not in index]
+        if missing:
+            print(f"[split] frozen test_250.txt does not match {data_dir} "
+                  f"({len(missing)}/{len(frozen['test'])} missing); "
+                  "ignoring frozen lists for this data directory.")
+            frozen = {}
+
+    if "test" in frozen:
+        test_names = frozen["test"]
+        used_test = set(test_names)
+        if "val" in frozen:
+            val_names = frozen["val"]
+            if used_test.intersection(val_names):
+                raise ValueError("frozen val/test lists overlap")
+            if "train" in frozen:
+                train_names = frozen["train"]
+            else:
+                held = used_test.union(val_names)
+                train_names = sorted(n for n in index if n not in held)
+            print(f"[split] frozen lists from {split_dir} "
+                  f"(train={len(train_names)}, val={len(val_names)}, "
+                  f"test={len(test_names)})")
+        else:
+            print("[split] WARNING: test_250.txt is frozen but val_125.txt is "
+                  "missing. Train/val are the complement of test, re-split "
+                  f"with sorted glob and seed={seed}. This avoids test "
+                  "contamination but is NOT the paper validation set.")
+            rest = sorted(n for n in index if n not in used_test)
+            random.seed(seed)
+            random.shuffle(rest)
+            n_val = int(len(index) * val_rate)
+            val_names = rest[:n_val]
+            train_names = rest[n_val:]
+    else:
+        print("[split] WARNING: no frozen test_250.txt; deriving a NEW split "
+              f"from sorted glob + shuffle(seed={seed}). This is portable "
+              "but is NOT the paper partition (original glob was unsorted).")
+        names = sorted(index)
+        random.seed(seed)
+        random.shuffle(names)
+        n_train = int(len(names) * train_rate)
+        n_val = int(len(names) * val_rate)
+        n_test = int(len(names) * test_rate)
+        train_names = names[:n_train]
+        val_names = names[n_train:n_train + n_val]
+        test_names = names[-n_test:]
+
+    _dump_split(dump_split_dir, train_names, val_names, test_names)
+
+    train_datalist = _paths_from_names(index, train_names, "train")
+    val_datalist = _paths_from_names(index, val_names, "val")
+    test_datalist = _paths_from_names(index, test_names, "test")
 
     print(f"training data is {len(train_datalist)}")
     print(f"validation data is {len(val_datalist)}")
@@ -266,9 +389,7 @@ def get_train_val_test_loader_from_train(data_dir, train_rate=0.7, val_rate=0.1,
     val_ds = MedicalDataset(val_datalist)
     test_ds = MedicalDataset(test_datalist)
 
-    loader = [train_ds, val_ds, test_ds]
-
-    return loader
+    return [train_ds, val_ds, test_ds]
 
 def get_train_loader_from_train(data_dir):
     ## train all labeled data 

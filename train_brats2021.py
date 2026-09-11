@@ -53,10 +53,9 @@ from monai.losses import TverskyLoss
 from monai.utils import set_determinism
 
 # Seed is applied in __main__ from --seed (default 123) so that runs can be
-# repeated with different seeds (e.g. 3 seeds for mean±std). The train/val
-# split itself stays fixed at seed=42 inside light_training dataloading.dataset,
-# so only *training* randomness (weight init, augmentation, dataloader order)
-# varies between seeds — giving independent runs on identical patient splits.
+# repeated with different seeds (e.g. 3 seeds for mean±std). The train/val/test
+# partition is the frozen internal held-out split in splits/ (not glob+shuffle
+# with seed 42). Unsorted glob+shuffle is not portable across machines.
 
 # ═══════════════════════════════════════════════════════════════════════
 # Constants (same for all variants)
@@ -584,9 +583,10 @@ if __name__ == "__main__":
                         help="Deterministic run-tag (logdir subfolder); enables resume across restarts")
     parser.add_argument("--seed", type=int, default=123,
                         help="Random seed passed to set_determinism() — controls weight init, "
-                             "augmentation and dataloader worker seeding. The train/val split is "
-                             "fixed at 42 in dataset.py, so different --seed gives independent "
-                             "training runs (use 3 seeds for mean±std). Baked into the logdir tag "
+                             "augmentation and dataloader worker seeding. The train/val/test "
+                             "split is the frozen internal held-out lists in splits/, so "
+                             "different --seed gives independent training runs on the same "
+                             "cases (use 3 seeds for mean±std). Baked into the logdir tag "
                              "so seeds never collide or resume each other.")
     cli_args = parser.parse_args()
 
@@ -661,7 +661,8 @@ if __name__ == "__main__":
         training_script=__file__,
     )
 
-    train_ds, val_ds, test_ds = get_train_val_test_loader_from_train(data_dir)
+    train_ds, val_ds, test_ds = get_train_val_test_loader_from_train(
+        data_dir, dump_split_dir=logdir)
 
     resume_path = os.path.join(model_save_path, "resume_latest.pt")
     if cfg["resume"] and os.path.exists(resume_path):

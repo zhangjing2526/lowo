@@ -416,7 +416,8 @@ if __name__ == "__main__":
                            master_port=17762,  # distinct from _haar.py (17761) so both arms can run concurrently
                            training_script=__file__)
 
-    train_ds, val_ds, test_ds = get_train_val_test_loader_from_train(data_dir)
+    train_ds, val_ds, test_ds = get_train_val_test_loader_from_train(
+        data_dir, dump_split_dir=logdir)
 
     resume_path = os.path.join(model_save_path, "resume_latest.pt")
     if resume and os.path.exists(resume_path):

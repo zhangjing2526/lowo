@@ -4,7 +4,7 @@ import random
 import json 
 
 def get_train_val_test_list_from_fulldata(data_dir, train_rate=0.7, val_rate=0.1, test_rate=0.2, seed=42):
-    all_paths = glob.glob(f"{data_dir}/*.npz")
+    all_paths = sorted(glob.glob(f"{data_dir}/*.npz"))  # sort before shuffle; still prefer frozen lists
 
     ## eliminate the pre
     all_paths_save = []

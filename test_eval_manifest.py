@@ -6,7 +6,7 @@ pass ``--ckpt`` to ``run_test_eval.py`` directly.
 
     python run_test_eval.py --config configs/A6_so8_g8.yaml \
         --ckpt /path/to/best_model_0.9317.pt \
-        --force_ethr 50 --test_list splits/test_250.txt --stage test
+        --force_ethr 50 --stage test
 """
 MANIFEST = [
     {"name": "B0", "config": "configs/B0_segmamba.yaml",

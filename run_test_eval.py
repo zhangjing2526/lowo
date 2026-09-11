@@ -25,7 +25,7 @@ Usage
 
     python run_test_eval.py --config configs/A6_so8_g8.yaml \
         --ckpt /path/to/best_model_0.9317.pt \
-        --force_ethr 50 --test_list splits/test_250.txt --stage test
+        --force_ethr 50 --stage test
 
 The dry-run is the important safety net: it builds the model from the config
 and does a STRICT ``load_state_dict`` on CPU.  If the config does not match the
@@ -518,19 +518,30 @@ def main():
                          "--allow_partial_load (default: ds_out)")
     ap.add_argument("--data_dir", default="./data/fullres/train",
                     help="directory of *.npz cases used to build the split")
-    ap.add_argument("--test_list", default="",
+    ap.add_argument("--test_list",
+                    default=os.path.join(REPO_ROOT, "splits", "test_250.txt"),
                     help="frozen test case list (one CaseID per line, '#' "
-                         "comments allowed). Strongly recommended: without it "
-                         "the split is re-derived from glob.glob() order and "
-                         "differs between hosts, which silently contaminates "
-                         "the test set.")
-    ap.add_argument("--val_list", default="",
+                         "comments allowed). Default: splits/test_250.txt, the "
+                         "internal held-out subset used in the paper (not the "
+                         "official BraTS test set). Pass empty to re-derive "
+                         "from glob order (not portable across hosts).")
+    ap.add_argument("--val_list",
+                    default=(os.path.join(REPO_ROOT, "splits", "val_125.txt")
+                             if os.path.isfile(os.path.join(REPO_ROOT, "splits",
+                                                            "val_125.txt"))
+                             else ""),
                     help="frozen val case list, same format as --test_list")
     ap.add_argument("--force_ethr", type=int, default=None,
                     help="skip per-arm val threshold scan; force ALL arms to use "
                          "the same fixed ET->NCR threshold (e.g. 50). "
                          "Makes cross-arm comparison immune to threshold-fitting noise.")
     args = ap.parse_args()
+    if args.stage in ("val", "all") and not args.val_list:
+        print("[warn] splits/val_125.txt is missing and --val_list was not "
+              "given. Validation cases may not match the paper split. Copy "
+              "the frozen val list to splits/val_125.txt, or recover it with "
+              "scripts/extract_split_lists.py from tta_val_*.npz.",
+              flush=True)
 
     metrics_device = "cpu" if args.cpu_metrics else args.device
     ignorable = tuple(p.strip() for p in args.ignore_missing.split(",") if p.strip())

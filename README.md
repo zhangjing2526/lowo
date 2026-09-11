@@ -15,8 +15,8 @@ next layer.  Folding the learned rotation into the adjacent mixer
 reproduces ten trained networks to machine precision (**163 sites**, max
 fold error \(7.8\times10^{-15}\)).  The per-site escape fraction \(\rho\)
 is zero at every shared mixer, including after a large rotation
-(\(\rho=0\) at **91 of 163** sites).  On 250 BraTS2021 volumes, fixed Haar
-with a per-subband mixer (A2, the 3D instantiation of
+(\(\rho=0\) at **91 of 163** sites).  On 250 internal held-out BraTS2021
+volumes, fixed Haar with a per-subband mixer (A2, the 3D instantiation of
 [HWD](https://arxiv.org/abs/2304.08366)) showed no detectable difference
 from a learned-convolution backbone at \(12\%\) fewer parameters.  Making
 the rotation learnable where it is locally non-absorbable does not
@@ -47,17 +47,24 @@ improve Dice across three seeds (fixed-minus-learned: \(+0.79\),
 | `model_segmamba/segmamba_attn.py` | SegAttn + LOWO (Swin-attention sequence mixer). C1/C2. |
 | `model_segmamba/segmamba.py` | Original SegMamba backbone (Mamba SSM mixer) — **B0** & the low-precision reference. |
 | `configs/` | One YAML per paper arm. IDs match the paper; filenames encode the factors (wavelet × mixer). |
-| `verify_absorption.py` | **Exact audit** — folds the learned \(Q\) into the subband mixer and reproduces each trained network to float64 round-off *from the checkpoint alone* (CPU, no data, no GPU). |
-| `checkpoints/a6_so8_g8_audit.pt` | Wavelet `Q` and adjacent mixer tensors from the A6 checkpoint (not the full 226 MB training weight). Reproduces A6's max fold error \(7.3\times10^{-15}\). The paper-wide max \(7.8\times10^{-15}\) is in the CSV (A4). |
+| `verify_absorption.py` | **Exact audit** — analysis mixers fold as \(W'=W(Q\otimes I)\), decoder as \(Q^\top W\), WaveletConv as \(R^\top WR\). Reproduces each trained map to float64 round-off from the checkpoint alone (CPU, no data, no GPU). |
+| `checkpoints/a6_so8_g8_audit.pt` | Wavelet `Q` and adjacent mixer tensors from the A6 checkpoint (not the full 226 MB training weight). |
 | `analysis/absorption_sites.csv` | Per-site audit records for the ten trained checkpoints (163 sites: A1–A8, C1, C2; drift \(\|Q-I\|_F\), escape fraction \(\rho\), fold error). One checkpoint per arm; A4 is seed 123. |
 | `analysis/a4_sites.csv` | A4 sites across three seeds. Only seed 123 is merged into the 163-site table. |
-| `run_test_eval.py` | Test-set Dice / HD95 protocol (8-way TTA, overlap 0.7, `--force_ethr 50`). Needs BraTS data and a full training checkpoint. |
-| `splits/test_250.txt` | Frozen 250-case test list used in the paper. |
+| `run_test_eval.py` | Held-out Dice / HD95 protocol (8-way TTA, overlap 0.7, `--force_ethr 50`). Needs BraTS data and a full training checkpoint. Defaults to `splits/test_250.txt`. |
+| `splits/test_250.txt` | Frozen 250-case **internal held-out** list used in the paper (not the official BraTS test set). |
+| `splits/val_125.txt` | Frozen 125-case validation list used for checkpoint selection. |
 | `requirements.txt` | Python dependencies. |
 
 A positive \(\rho\) means \(Q\) is **load-bearing relative to that mixer
 class** (locally non-absorbable).  It is not unique recovery of \(Q\) from
 the network: sign, permutation, and downstream layers remain.
+
+`splits/test_250.txt` and `splits/val_125.txt` are an **internal held-out
+subset** of the BraTS2021 training pool, not the official BraTS test set.
+Training and eval load these lists automatically so the partition does not
+depend on `glob` order. The training complement is every remaining case
+under the npz directory.
 
 ## Paper arms and their configs
 
@@ -70,7 +77,7 @@ Paper IDs are unchanged. Filenames encode the ablation factors so A1–A6 read a
 | ID | Backbone | Config |
 |---|---|---|
 | B0 | SegMamba, learned stride-2 conv | `configs/B0_segmamba.yaml` |
-| S1 | SwinUNETR | `configs/S1_swin_unetr.yaml` |
+| S1 | SwinUNETR (unweighted CE, no deep supervision) | `configs/S1_swin_unetr.yaml` |
 
 ### Main ablation (SegMamba + LOWO)
 
@@ -152,7 +159,7 @@ python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8
 #    ET→NCR volume threshold fixed at 50 — the protocol behind Table 1)
 python run_test_eval.py --config configs/A6_so8_g8.yaml \
     --ckpt logs/segmamba_haar_so8_dicece_ds/a6_so8_g8_s123/model/best_model_*.pt \
-    --force_ethr 50 --test_list splits/test_250.txt --stage test
+    --force_ethr 50 --stage test
 ```
 
 C1 / C2 use the same trainer (`model: segattn_haar` in the YAML) and do not
@@ -163,10 +170,11 @@ python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml
 python train_brats2021_attn.py   # equivalent, attention-only script
 ```
 
-All arms share the identical evaluation protocol (single split, same 250-case
-test list, same post-processing), so per-arm numbers in the paper are directly
-comparable. Dice reproduction still needs BraTS2021 and a full training
-checkpoint; the absorption audit does not.
+All arms share the identical **evaluation** protocol (same internal held-out
+250-case list, overlap 0.7, 8-way TTA, ET→NCR threshold 50). S1 was trained
+with unweighted CE and no deep supervision; every other paper arm uses
+weighted CE+Tversky and deep supervision. Dice reproduction still needs
+BraTS2021 and a full training checkpoint; the absorption audit does not.
 
 ## Repository layout rationale
 
@@ -197,12 +205,12 @@ checkpoint; the absorption audit does not.
 | `python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml` | C1 |
 | `python train_brats2021.py --config configs/C2_segattn_so8_g1_routed.yaml` | C2 |
 
-Eval (same protocol for every arm):
+Eval (same protocol for every arm; `splits/test_250.txt` is the default):
 
 ```bash
 python run_test_eval.py --config configs/<arm>.yaml \
     --ckpt <full_training_weight.pt> \
-    --force_ethr 50 --test_list splits/test_250.txt --stage test
+    --force_ethr 50 --stage test
 ```
 
 ## License
