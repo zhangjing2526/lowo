@@ -1,20 +1,38 @@
-# Learned Orthogonal Wavelet Operator (LOWO): Identifiability of a Basis for 3D Resampling
+# When Does a Learned Wavelet Basis Matter?
 
-**[ICASSP 2027 submission]** Code for the operator and the checkpoint-only absorption audit.
+**An Absorption Audit for 3D Resampling** — [ICASSP 2027 submission]
+
+Code for the Learned Orthogonal Wavelet Operator (LOWO) and the
+checkpoint-only absorption audit.
+
+Paper: *When Does a Learned Wavelet Basis Matter? An Absorption Audit for 3D Resampling*
 
 Code: [https://github.com/zhangjing2526/lowo](https://github.com/zhangjing2526/lowo)
 
-This repository contains the models, training/inference recipes and the exact
-checkpoint-level audit that supports the claims of the paper
-*"Learned Orthogonal Wavelet Operator (LOWO): Identifiability of a Basis for 3D Resampling"*.
+A learned orthogonal wavelet sitting upstream of a linear mixer is not
+identified by its coefficients: any rotation \(Q\) can be folded into the
+next layer.  Folding the learned rotation into the adjacent mixer
+reproduces ten trained networks to machine precision (**163 sites**, max
+fold error \(7.8\times10^{-15}\)).  The per-site escape fraction \(\rho\)
+is zero at every shared mixer, including after a large rotation
+(\(\rho=0\) at **91 of 163** sites).  On 250 BraTS2021 volumes, fixed Haar
+with a per-subband mixer (A2, the 3D instantiation of
+[HWD](https://arxiv.org/abs/2304.08366)) showed no detectable difference
+from a learned-convolution backbone at \(12\%\) fewer parameters.  Making
+the rotation learnable where it is locally non-absorbable does not
+improve Dice across three seeds (fixed-minus-learned: \(+0.79\),
+\(+0.84\), \(-0.85\)).
 
 ```text
-┌─────────────────────────────┐
-│  K(θ, A) = Q(A) · K_haar(θ) │   Q(A) = exp(A − Aᵀ) ∈ SO(8), 28 DOF
-└─────────────────────────────┘
+┌───────────────────────────────────────────┐
+│  K(θ, A) = Q(A) · K_haar(θ)               │
+│  Q(A) = exp(A − Aᵀ) ∈ SO(8)               │
+│  A is 8×8 (64 scalars); Q has 28 eff. DOF │
+└───────────────────────────────────────────┘
          │ stride-2 conv³D (DWT fused)          (IDWT = same kernel, transposed)
          ▼
-  subband-major 8C feature map ──► 1×1 subband mixer (groups=1 → absorbs Q)
+  subband-major 8C feature map ──► 1×1 subband mixer
+       groups=1 absorbs Q                 groups=8 can make Q load-bearing
 ```
 
 ---
@@ -29,18 +47,23 @@ checkpoint-level audit that supports the claims of the paper
 | `model_segmamba/segmamba_attn.py` | SegAttn + LOWO (Swin-attention sequence mixer). C1/C2. |
 | `model_segmamba/segmamba.py` | Original SegMamba backbone (Mamba SSM mixer) — **B0** & the low-precision reference. |
 | `configs/` | One YAML per paper arm. IDs match the paper; filenames encode the factors (wavelet × mixer). |
-| `verify_absorption.py` | **§3.2 exact audit** — folds the learned Q into the subband mixer and reproduces each trained network to float64 round-off *from the checkpoint alone* (CPU, no data, no GPU). |
-| `checkpoints/a6_so8_g8_audit.pt` | Wavelet `Q` and adjacent mixer tensors from the A6 checkpoint (not the full 226 MB training weight). Enough to reproduce the `7.3×10⁻¹⁵` fold error. |
-| `analysis/absorption_sites.csv` | Per-site audit records for the nine trained checkpoints (147 sites: drift ‖Q−I‖_F, escape fraction ρ, fold error). |
+| `verify_absorption.py` | **Exact audit** — folds the learned \(Q\) into the subband mixer and reproduces each trained network to float64 round-off *from the checkpoint alone* (CPU, no data, no GPU). |
+| `checkpoints/a6_so8_g8_audit.pt` | Wavelet `Q` and adjacent mixer tensors from the A6 checkpoint (not the full 226 MB training weight). Reproduces A6's max fold error \(7.3\times10^{-15}\). The paper-wide max \(7.8\times10^{-15}\) is in the CSV (A4). |
+| `analysis/absorption_sites.csv` | Per-site audit records for the ten trained checkpoints (163 sites: A1–A8, C1, C2; drift \(\|Q-I\|_F\), escape fraction \(\rho\), fold error). One checkpoint per arm; A4 is seed 123. |
+| `analysis/a4_sites.csv` | A4 sites across three seeds. Only seed 123 is merged into the 163-site table. |
 | `run_test_eval.py` | Test-set Dice / HD95 protocol (8-way TTA, overlap 0.7, `--force_ethr 50`). Needs BraTS data and a full training checkpoint. |
 | `splits/test_250.txt` | Frozen 250-case test list used in the paper. |
 | `requirements.txt` | Python dependencies. |
+
+A positive \(\rho\) means \(Q\) is **load-bearing relative to that mixer
+class** (locally non-absorbable).  It is not unique recovery of \(Q\) from
+the network: sign, permutation, and downstream layers remain.
 
 ## Paper arms and their configs
 
 Paper IDs are unchanged. Filenames encode the ablation factors so A1–A6 read as a grid, not a flat list.
 
-`wavelet_mode: so8` + `learnable_wavelet: false` is exactly standard Haar (`Q = I`, `θ = π/4`). A4 (learnable θ × `groups=8`) was not released.
+`wavelet_mode: so8` + `learnable_wavelet: false` is exactly standard Haar (`Q = I`, `θ = π/4`).
 
 ### Baselines
 
@@ -53,9 +76,13 @@ Paper IDs are unchanged. Filenames encode the ablation factors so A1–A6 read a
 
 | | mixer `groups=1` | mixer `groups=8` |
 |---|---|---|
-| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` |
-| learnable θ (3 DOF) | **A3** `configs/A3_theta_g1.yaml` | **A4** not released |
-| learnable `Q ∈ SO(8)` (28 DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
+| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` (recommended 3D HWD rung) |
+| learnable θ (3 DOF) | **A3** `configs/A3_theta_g1.yaml` | **A4** `configs/A4_theta_g8.yaml` |
+| learnable \(Q\in SO(8)\) (28 effective DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
+
+A2 and A6 differ only in whether \(A\) is trainable.  Both use `groups=8`
+on the resampling path, so \(Q\) is locally non-absorbable; learning it
+does not reliably change Dice.
 
 ### Probes (one extra factor on top of a main arm)
 
@@ -76,17 +103,20 @@ pip install -r requirements.txt
 - `monai` for networks / sliding-window inference
 - `mamba-ssm` + `causal-conv1d` only for the Mamba backbone (`B0`, A1–A8). C1/C2 and `verify_absorption.py` do not need them.
 
-### Verify the absorption identity (CPU, no data — the §3.2 audit)
+### Verify the absorption identity (CPU, no data — the paper's exact audit)
 
 ```bash
 # 1. no download: random Q, W  (proves the identity; numbers will not match the paper)
 python verify_absorption.py --synthetic
 
-# 2. the paper's A6 tensors (in-repo, ~few MB) — this is the 7.3e-15 check
+# 2. the paper's A6 tensors (in-repo, ~few MB) — A6's own max fold is 7.3e-15
 python verify_absorption.py checkpoints/a6_so8_g8_audit.pt
+
+# 3. paper-wide counts from the tracked CSV (163 sites, 91 with ρ=0, max 7.8e-15)
+python -c "import csv; r=list(csv.DictReader(open('analysis/absorption_sites.csv'))); print(len(r), sum(float(x['rho'])<1e-12 for x in r), max(float(x['fold_err']) for x in r))"
 ```
 
-Neither command loads the network, needs a GPU, or touches BraTS. The script
+Neither of the first two commands loads the network, needs a GPU, or touches BraTS. The script
 reads wavelet `Q` and the adjacent 1×1 mixer, folds `Q` into the mixer, and
 compares the folded operator against the original to machine precision.
 
@@ -98,7 +128,11 @@ max fold error: 7.3e-15
 inert (ρ≈0): 4/16
 ```
 
-(A6 uses `groups=8` on the encoder mixers, so only the four decoder upsamples are absorbable. A5 with `groups=1` is 8/16 inert.)
+(A6 uses `groups=8` on the encoder mixers, so only the four decoder upsamples are absorbed. A5 with `groups=1` is 8/16 absorbed.)
+
+The paper-wide figure is larger because A4 is in the 163-site table:
+`vit.gscs.2.proj2` there is \(7.8\times10^{-15}\).  Command 3 prints
+`163 91 7.847...e-15`.
 
 A full training checkpoint (`best_model_0.9317.pt`, ~226 MB) is **not** required
 for this audit. Host that file on a GitHub Release / Zenodo / Hugging Face
@@ -132,14 +166,14 @@ python train_brats2021_attn.py   # equivalent, attention-only script
 All arms share the identical evaluation protocol (single split, same 250-case
 test list, same post-processing), so per-arm numbers in the paper are directly
 comparable. Dice reproduction still needs BraTS2021 and a full training
-checkpoint; the identifiability audit does not.
+checkpoint; the absorption audit does not.
 
 ## Repository layout rationale
 
 - **`model_segmamba/lowo.py` is deliberately dependency-free** (torch only), so the
   operator can be dropped into any CNN / attention / SSM backbone — the paper's
   "drop-in replacement" claim is embodied in the file layout.
-- **`verify_absorption.py` is deliberately data-free**: identifiability is an
+- **`verify_absorption.py` is deliberately data-free**: local absorbability is an
   architectural property, verified exactly per checkpoint, not from aggregate
   metrics.
 - Training framework (`light_training/`) is included verbatim so the exact
@@ -155,6 +189,7 @@ checkpoint; the identifiability audit does not.
 | `python train_brats2021.py --config configs/A1_fixed_g1.yaml` | A1 |
 | `python train_brats2021.py --config configs/A2_fixed_g8.yaml` | A2 |
 | `python train_brats2021.py --config configs/A3_theta_g1.yaml` | A3 |
+| `python train_brats2021.py --config configs/A4_theta_g8.yaml` | A4 |
 | `python train_brats2021.py --config configs/A5_so8_g1.yaml` | A5 |
 | `python train_brats2021.py --config configs/A6_so8_g8.yaml` | A6 |
 | `python train_brats2021.py --config configs/A7_so8_g1_wbloss.yaml` | A7 |

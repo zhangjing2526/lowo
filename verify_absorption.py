@@ -1,4 +1,4 @@
-"""Verify the absorption identity behind LOWO's identifiability claim.
+"""Verify the absorption identity behind LOWO's local-identifiability claim.
 
 The 3D DWT in ``lowo.py`` emits subband-major channels (index ``s*C + c``), and
 its analysis kernel is ``K = Q @ K_haar``.  Therefore the learned orthogonal
@@ -10,12 +10,13 @@ Consequences, both checked here against real checkpoints:
 
   * A *dense* subband mixer (groups=1) absorbs Q exactly.  Folding
     ``W' = W @ (Q kron I_C)`` yields a network whose wavelet is bit-exact Haar
-    and whose function is unchanged, so Q is unidentifiable at that site --
+    and whose function is unchanged, so Q is locally absorbed at that site --
     however far it has drifted from the identity.
   * A *per-subband* mixer (groups=8) does not.  ``W @ (Q kron I_C)`` carries
     energy outside the block-diagonal sparsity pattern, and that off-block
-    fraction is exactly the distance to the set of realisable groups=8 mixers,
-    so it quantifies how identifiable Q is at that site.
+    fraction rho is the distance to the set of realisable groups=8 mixers.
+    rho > 0 means Q is load-bearing relative to that mixer class, not that Q
+    can be uniquely recovered from the network.
 
 The decoder's ``HaarUpsample`` applies Q after its dense expansion, so there the
 fold is ``W' = (Q^T kron I_Cout) @ W`` and the bias transforms as well.
@@ -299,7 +300,7 @@ def main() -> None:
                     help="LOWO checkpoint (.pt). Omit when using --synthetic.")
     ap.add_argument("--synthetic", action="store_true",
                     help="run on random Q,W (CPU, no file). Does not reproduce "
-                         "the paper's 7.3e-15 figure; use a real checkpoint "
+                         "the paper's 7.8e-15 figure; use a real checkpoint "
                          "for that.")
     ap.add_argument("--in-chans", type=int, default=4,
                     help="input modalities feeding downsample_layers.0")
@@ -357,8 +358,8 @@ def main() -> None:
     if fold_errors:
         print(f"max fold error: {max(fold_errors):.1e}")
     print(f"inert (ρ≈0): {len(absorbable)}/{len(sites)}")
-    print(f"absorbable   (fold exact, Q unidentifiable) : {len(absorbable)}")
-    print(f"identifiable (fold escapes the group pattern): {len(identifiable)}")
+    print(f"absorbed     (fold exact, ρ≈0)              : {len(absorbable)}")
+    print(f"load-bearing (escapes the grouped mixer)    : {len(identifiable)}")
     if broken:
         print(f"UNRESOLVED / fold failed                    : {len(broken)}")
         for p in broken:
@@ -366,11 +367,12 @@ def main() -> None:
 
     if absorbable:
         worst = max(dev for _, dev in absorbable)
-        print(f"\nAt the {len(absorbable)} absorbable sites the fold reproduces the "
+        print(f"\nAt the {len(absorbable)} absorbed sites the fold reproduces the "
               f"output to float64 round-off\neven though Q drifts up to "
-              f"||Q-I||_F = {worst:.4f}: those degrees of freedom are inert.")
+              f"||Q-I||_F = {worst:.4f}: those degrees of freedom are locally "
+              f"absorbed.")
     if identifiable:
-        print("\nIdentifiable sites, by how much of the folded operator escapes "
+        print("\nLoad-bearing sites, by how much of the folded operator escapes "
               "the groups pattern:")
         for path, dev, off in sorted(identifiable, key=lambda t: -t[2]):
             print(f"    {off:6.1%}  ||Q-I||_F={dev:7.4f}  {path}")

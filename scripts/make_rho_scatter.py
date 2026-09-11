@@ -7,7 +7,7 @@ only grouped (groups=8) mixers rise off the axis.
 
 Usage
 -----
-Run on the nine checkpoints that back the paper (paths under ``LOGS``/``ROOT``),
+Run on the ten checkpoints that back the paper (paths under ``LOGS``/``ROOT``),
 or supply your own:
 
     python scripts/make_rho_scatter.py
@@ -40,7 +40,8 @@ import verify_absorption as va
 LOGS = os.path.join(ROOT, 'logs')
 
 # (arm, label, checkpoint) — highest-Dice checkpoint of each run, the same
-# nine networks the paper audits.  Adjust paths to your own log layout.
+# ten networks the paper audits.  A4 seed-123 is merged from
+# analysis/a4_sites.csv when the full checkpoint is not on disk.
 CKPTS = [
     ('A1', 'fixed, g1',
      rf'{LOGS}\segmamba_haar_so8_dicece_ds\segmamba_haar_fixed\model\best_model_0.9268.pt'),
@@ -48,6 +49,8 @@ CKPTS = [
      rf'{ROOT}\test\segmamba_haar_fixed_g8\model\best_model_0.9285.pt'),
     ('A3', 'theta, g1',
      rf'{LOGS}\segmamba_haar_dicece_ds\segmamba_haar_theta\model\best_model_0.9251.pt'),
+    ('A4', 'theta, g8',
+     rf'{ROOT}\test\segmamba_haar_theta_g8_s123_s123\model\best_model.pt'),
     ('A5', 'so8, g1',
      rf'{LOGS}\segmamba_haar_so8_dicece_ds\segmamba_haar\model\best_model_0.9225.pt'),
     ('A6', 'so8, g8',
@@ -75,7 +78,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--ckpt', nargs='*', default=None,
-                    help='[tag@]path checkpoints; default = the 9 paper arms')
+                    help='[tag@]path checkpoints; default = the 10 paper arms')
     ap.add_argument('--in-chans', type=int, default=4,
                     help='input modalities feeding downsample_layers.0')
     ap.add_argument('--tol', type=float, default=1e-10,
@@ -86,7 +89,10 @@ def main() -> None:
                     help='output figure (default figs/drift_vs_rho.pdf)')
     args = ap.parse_args()
 
-    ckpts = [parse_ckpt(c) for c in (args.ckpt or CKPTS)]
+    if args.ckpt:
+        ckpts = [(tag, tag, path) for tag, path in (parse_ckpt(c) for c in args.ckpt)]
+    else:
+        ckpts = list(CKPTS)
     out_csv = args.out_csv or os.path.join(ROOT, 'analysis', 'absorption_sites.csv')
     out_fig = args.out_fig or os.path.join(ROOT, 'figs', 'drift_vs_rho.pdf')
 
@@ -110,6 +116,21 @@ def main() -> None:
                              drift=drift, rho=res['off_block'],
                              fold_err=res['err_fold']))
         print(f'{arm}: {sum(1 for r in rows if r["arm"] == arm)} sites')
+
+    if not any(r['arm'] == 'A4' for r in rows):
+        a4_csv = os.path.join(ROOT, 'analysis', 'a4_sites.csv')
+        if os.path.exists(a4_csv):
+            with open(a4_csv, newline='') as fh:
+                for r in csv.DictReader(fh):
+                    if r['arm'] != 'A4-123':
+                        continue
+                    rows.append(dict(arm='A4', label='theta, g8',
+                                     site=r['site'], role=r['role'],
+                                     groups=int(r['groups']),
+                                     drift=float(r['drift']),
+                                     rho=float(r['rho']),
+                                     fold_err=float(r['fold_err'])))
+            print('A4: 16 sites (from analysis/a4_sites.csv, seed 123)')
 
     if not rows:
         raise SystemExit('no checkpoints found')

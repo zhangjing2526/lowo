@@ -1,6 +1,6 @@
 # Paper arm A5
 # backbone: SegMamba + LOWO
-# wavelet:  learnable Q ∈ SO(8) (28 DOF)
+# wavelet:  learnable Q ∈ SO(8) (A is 8×8 / 64 scalars; 28 effective DOF)
 # mixer:    groups=1
 # train:    python train_brats2021.py --config configs/A5_so8_g1.yaml
 

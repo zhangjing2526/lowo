@@ -9,7 +9,7 @@ _checkpoints/
 # stripped audit tensors (wavelet Q + adjacent mixers only) are tracked
 !checkpoints/*.pt
 
-# analysis outputs — analysis/absorption_sites.csv is the 147-site table and is tracked
+# analysis outputs — analysis/absorption_sites.csv is the 163-site table and is tracked
 figs/*.pdf
 figs/*.png
 

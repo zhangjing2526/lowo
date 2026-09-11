@@ -1,0 +1,35 @@
+# Paper arm A4
+# backbone: SegMamba + LOWO
+# wavelet:  learnable θ (3 DOF, axis-separable)
+# mixer:    groups=8
+# train:    python train_brats2021.py --config configs/A4_theta_g8.yaml
+#
+# Paired with A3: same 3-DOF θ; only the mixer groups differ.
+# Paired with A2: same groups=8; only the wavelet DOF differ.
+# Paper audit uses seed 123 (analysis/a4_sites.csv, merged into the 163-site table).
+
+model: segmamba_haar
+
+batch_size: 2
+max_epoch: 500
+val_every: 2
+device: cuda:0
+master_port: 17767
+roi_size: [128, 128, 128]
+resume: true
+train_process: 12
+
+use_dice_ce: true
+deep_supervision: true
+wavelet_boundary_weight: 0.0
+
+wavelet_mode: theta
+learnable_wavelet: true
+gsc_checkpoint: false
+per_channel_stem: false
+per_channel_wavelet: false
+grouped_mix: true
+
+window_size: null
+num_heads: null
+attn_checkpoint: null
