@@ -20,5 +20,11 @@ __pycache__/
 .venv/
 venv/
 
+# CIFAR-2D probe artifacts (scripts in cifar2d/ are tracked)
+cifar2d/data/
+cifar2d/runs/
+cifar2d/**/stdout.log
+cifar2d/**/stderr.log
+
 # misc
 .DS_Store

@@ -13,15 +13,17 @@ A learned orthogonal wavelet sitting upstream of a linear mixer is not
 identified by its coefficients: any rotation \(Q\) can be folded into the
 next layer.  Folding the learned rotation into the adjacent mixer
 reproduces ten trained networks to machine precision (**163 sites**, max
-fold error \(7.8\times10^{-15}\)).  The per-site escape fraction \(\rho\)
+fold error \(5.9\times10^{-15}\)).  The per-site escape fraction \(\rho\)
 is zero at every shared mixer, including after a large rotation
 (\(\rho=0\) at **91 of 163** sites).  On 250 internal held-out BraTS2021
 volumes, fixed Haar with a per-subband mixer (A2, the 3D instantiation of
-[HWD](https://arxiv.org/abs/2304.08366)) showed no detectable difference
-from a learned-convolution backbone at \(12\%\) fewer parameters.  Making
-the rotation learnable where it is locally non-absorbable does not
-improve Dice across three seeds (fixed-minus-learned: \(+0.79\),
-\(+0.84\), \(-0.85\)).
+[HWD](https://arxiv.org/abs/2304.08366)) is compatible with a
+learned-convolution backbone at \(12\%\) fewer parameters.  Making the
+rotation learnable where it is locally non-absorbable shows no consistent
+Dice gain across three seeds (fixed-minus-learned: \(+0.79\),
+\(+0.84\), \(-0.85\)).  A CIFAR-10 ResNet-18 probe repeats the
+**analysis-site** audit (\(SO(4)\), six downsample sites, fold \(W'=WR\))
+but not A2\(\approx\)B0.
 
 ```text
 ┌───────────────────────────────────────────┐
@@ -54,6 +56,7 @@ improve Dice across three seeds (fixed-minus-learned: \(+0.79\),
 | `run_test_eval.py` | Held-out Dice / HD95 protocol (8-way TTA, overlap 0.7, `--force_ethr 50`). Needs BraTS data and a full training checkpoint. Defaults to `splits/test_250.txt`. |
 | `splits/test_250.txt` | Frozen 250-case **internal held-out** list used in the paper (not the official BraTS test set). |
 | `splits/val_125.txt` | Frozen 125-case validation list used for checkpoint selection. |
+| `cifar2d/` | 2D probe: \(SO(4)\) Haar downsample on CIFAR ResNet-18. Analysis fold only (`mix(dwt(x))`). Scripts, no weights. |
 | `requirements.txt` | Python dependencies. |
 
 A positive \(\rho\) means \(Q\) is **load-bearing relative to that mixer
@@ -83,13 +86,13 @@ Paper IDs are unchanged. Filenames encode the ablation factors so A1–A6 read a
 
 | | mixer `groups=1` | mixer `groups=8` |
 |---|---|---|
-| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` (recommended 3D HWD rung) |
+| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` (3D HWD rung on BraTS) |
 | learnable θ (3 DOF) | **A3** `configs/A3_theta_g1.yaml` | **A4** `configs/A4_theta_g8.yaml` |
 | learnable \(Q\in SO(8)\) (28 effective DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
 
 A2 and A6 differ only in whether \(A\) is trainable.  Both use `groups=8`
 on the resampling path, so \(Q\) is locally non-absorbable; learning it
-does not reliably change Dice.
+shows no consistent Dice gain on BraTS.
 
 ### Probes (one extra factor on top of a main arm)
 
@@ -116,10 +119,10 @@ pip install -r requirements.txt
 # 1. no download: random Q, W  (proves the identity; numbers will not match the paper)
 python verify_absorption.py --synthetic
 
-# 2. the paper's A6 tensors (in-repo, ~few MB) — A6's own max fold is 7.3e-15
+# 2. the paper's A6 tensors (in-repo, ~few MB) — A6's own max fold is 4.3e-15
 python verify_absorption.py checkpoints/a6_so8_g8_audit.pt
 
-# 3. paper-wide counts from the tracked CSV (163 sites, 91 with ρ=0, max 7.8e-15)
+# 3. paper-wide counts from the tracked CSV (163 sites, 91 with ρ=0, max 5.9e-15)
 python -c "import csv; r=list(csv.DictReader(open('analysis/absorption_sites.csv'))); print(len(r), sum(float(x['rho'])<1e-12 for x in r), max(float(x['fold_err']) for x in r))"
 ```
 
@@ -131,15 +134,15 @@ On the A6 audit file you should see:
 
 ```text
 wavelet sites: 16
-max fold error: 7.3e-15
+max fold error: 4.3e-15
 inert (ρ≈0): 4/16
 ```
 
 (A6 uses `groups=8` on the encoder mixers, so only the four decoder upsamples are absorbed. A5 with `groups=1` is 8/16 absorbed.)
 
-The paper-wide figure is larger because A4 is in the 163-site table:
-`vit.gscs.2.proj2` there is \(7.8\times10^{-15}\).  Command 3 prints
-`163 91 7.847...e-15`.
+The paper-wide figure is the maximum over all 163 sites in
+`analysis/absorption_sites.csv`.  Command 3 prints
+`163 91 5.92...e-15`.
 
 A full training checkpoint (`best_model_0.9317.pt`, ~226 MB) is **not** required
 for this audit. Host that file on a GitHub Release / Zenodo / Hugging Face
@@ -152,7 +155,7 @@ dataset if you want to reproduce Dice; do not put it on a region-locked drive.
 python scripts/rename_brats2021_data.py
 python scripts/preprocessing_brats2021.py
 
-# 2. train (500 epochs, DiceCE + deep supervision)
+# 2. train (500 epochs, weighted CE+Tversky + deep supervision, poly-SGD)
 python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8
 
 # 3. inference + metrics (sliding window, overlap 0.7, 8-way mirror TTA,
@@ -183,7 +186,8 @@ BraTS2021 and a full training checkpoint; the absorption audit does not.
   "drop-in replacement" claim is embodied in the file layout.
 - **`verify_absorption.py` is deliberately data-free**: local absorbability is an
   architectural property, verified exactly per checkpoint, not from aggregate
-  metrics.
+  metrics.  `cifar2d/verify_absorption_2d.py` is the same identity on analysis
+  sites only (\(SO(4)\), fold \(W'=WR\)).
 - Training framework (`light_training/`) is included verbatim so the exact
   optimizer / LR schedule / deep-supervision helper used in the paper is
   reproducible.
@@ -212,6 +216,35 @@ python run_test_eval.py --config configs/<arm>.yaml \
     --ckpt <full_training_weight.pt> \
     --force_ethr 50 --stage test
 ```
+
+## CIFAR-10 2D probe (`cifar2d/`)
+
+ResNet-18, no stem DWT.  Haar sites are layer2/3/4 × (main `conv1` + skip) =
+**6 analysis sites**.  Fold is \(W'=WR\) (`groups=1` absorbs; `groups=4` can
+make \(Q\) load-bearing).  There is no sandwich `idwt∘W∘dwt` in this probe.
+
+| Arm | Downsample | Paper analogue |
+|---|---|---|
+| B0 | stride-2 conv | learned resample |
+| A2 | fixed Haar, `groups=4` | 2D HWD |
+| A5 | learnable \(Q\in SO(4)\), `groups=1` | absorbable |
+| A6 | learnable \(Q\in SO(4)\), `groups=4` | load-bearing 6 DOF |
+
+`wave.skew` is in a **wd=0** group.  Report official-test top-1 at the best
+validation epoch (5k hold-out from the 50k train split).  Three seeds:
+A2 \(94.44\) vs B0 \(95.14\) (McNemar \(p\le 0.002\) every seed); A6
+\(94.64\) does not beat A2.  The audit transfers; A2\(\approx\)B0 does not.
+
+```bash
+cd cifar2d
+python train_cifar.py --selftest
+python train_cifar.py --arm A2 --seed 123 --device cuda:0
+python verify_absorption_2d.py --synthetic          # no checkpoint needed
+python verify_absorption_2d.py runs/a6_s123/best.pt  # after training
+python mcnemar.py --all --runs runs
+```
+
+Needs `torchvision`.  Do not commit `cifar2d/data/` or `cifar2d/runs/`.
 
 ## License
 
