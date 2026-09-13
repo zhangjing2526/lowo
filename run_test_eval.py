@@ -20,12 +20,19 @@ exactly matches the checkpoint, then runs the unified protocol:
 
 Usage
 -----
-    python run_test_eval.py --config configs/A6_so8_g8.yaml \
-        --ckpt /path/to/best_model_0.9317.pt --dry_run
+    # validate ONE variant on CPU (no GPU, no data needed):
+    # (ckpt_dir / out_dir are now derived from a single --data_root)
+    python run_test_eval.py --config configs/exp6d_segmamba_haar_fixed_g8.yaml \
+        --ckpt_dir <data_root>/segmamba_haar_fixed_g8 --dry_run
 
-    python run_test_eval.py --config configs/A6_so8_g8.yaml \
-        --ckpt /path/to/best_model_0.9317.pt \
-        --force_ethr 50 --stage test
+    # full eval of one variant (val threshold search + test):
+    python run_test_eval.py --config configs/exp6d_segmamba_haar_fixed_g8.yaml \
+        --ckpt_dir <data_root>/segmamba_haar_fixed_g8
+
+    # run the whole 13-variant manifest (see run_all_test_eval.sh);
+    # override the data root on Ubuntu with the mount path:
+    python run_test_eval.py --manifest test_eval_manifest.py --index 0 \
+        --data_root /data/zhangjing/mamba
 
 The dry-run is the important safety net: it builds the model from the config
 and does a STRICT ``load_state_dict`` on CPU.  If the config does not match the
@@ -496,8 +503,9 @@ def main():
     ap.add_argument("--manifest", default="", help="test_eval_manifest.py")
     ap.add_argument("--index", type=int, default=0)
     # portable single data root (override on the Ubuntu box with the Linux mount path)
-    ap.add_argument("--data_root", default=".",
-                    help="root that contains ./logs (ckpts) and ./analysis_results (outputs)")
+    ap.add_argument("--data_root", default="G:/material/天枢/mamba",
+                    help="root that contains ./logs (ckpts) and ./analysis_results (outputs). "
+                         "On Ubuntu pass the mount point, e.g. /data/zhangjing/mamba")
     ap.add_argument("--device", default="cuda:0")
     ap.add_argument("--no_batch_trim", action="store_true",
                     help="run at full speed (no per-case torch.cuda.empty_cache, "
@@ -518,30 +526,20 @@ def main():
                          "--allow_partial_load (default: ds_out)")
     ap.add_argument("--data_dir", default="./data/fullres/train",
                     help="directory of *.npz cases used to build the split")
-    ap.add_argument("--test_list",
-                    default=os.path.join(REPO_ROOT, "splits", "test_250.txt"),
+    ap.add_argument("--test_list", default="splits/test_250.txt",
                     help="frozen test case list (one CaseID per line, '#' "
-                         "comments allowed). Default: splits/test_250.txt, the "
-                         "internal held-out subset used in the paper (not the "
-                         "official BraTS test set). Pass empty to re-derive "
-                         "from glob order (not portable across hosts).")
-    ap.add_argument("--val_list",
-                    default=(os.path.join(REPO_ROOT, "splits", "val_125.txt")
-                             if os.path.isfile(os.path.join(REPO_ROOT, "splits",
-                                                            "val_125.txt"))
-                             else ""),
-                    help="frozen val case list, same format as --test_list")
+                         "comments allowed). Defaults to the paper's internal "
+                         "held-out 250 (splits/test_250.txt); pass '' to "
+                         "re-derive from glob.glob() order (NOT reproducible "
+                         "across hosts, silently contaminates the test set).")
+    ap.add_argument("--val_list", default="splits/val_125.txt",
+                    help="frozen val case list, same format as --test_list "
+                         "(defaults to splits/val_125.txt).")
     ap.add_argument("--force_ethr", type=int, default=None,
                     help="skip per-arm val threshold scan; force ALL arms to use "
                          "the same fixed ET->NCR threshold (e.g. 50). "
                          "Makes cross-arm comparison immune to threshold-fitting noise.")
     args = ap.parse_args()
-    if args.stage in ("val", "all") and not args.val_list:
-        print("[warn] splits/val_125.txt is missing and --val_list was not "
-              "given. Validation cases may not match the paper split. Copy "
-              "the frozen val list to splits/val_125.txt, or recover it with "
-              "scripts/extract_split_lists.py from tta_val_*.npz.",
-              flush=True)
 
     metrics_device = "cpu" if args.cpu_metrics else args.device
     ignorable = tuple(p.strip() for p in args.ignore_missing.split(",") if p.strip())

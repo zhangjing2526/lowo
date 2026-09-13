@@ -96,4 +96,10 @@ def build_model(arm: str, num_classes: int = 10) -> nn.Module:
     if arm == "A6":
         haar = dict(learnable=True, mode="so4", grouped_mix=True)
         return ResNet18CIFAR(num_classes=num_classes, haar=haar)
-    raise ValueError(f"unknown arm {arm!r}; use B0, A2, A5, or A6")
+    if arm == "HWD":
+        haar = dict(learnable=False, mode="so4", grouped_mix=False)
+        return ResNet18CIFAR(num_classes=num_classes, haar=haar)
+    if arm == "HWDQ":
+        haar = dict(learnable=True, mode="so4", grouped_mix=False)
+        return ResNet18CIFAR(num_classes=num_classes, haar=haar)
+    raise ValueError(f"unknown arm {arm!r}; use B0, A2, A5, A6, HWD, or HWDQ")

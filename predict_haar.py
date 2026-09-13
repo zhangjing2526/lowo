@@ -1,11 +1,11 @@
 """Inference (full-volume sliding-window + mirror TTA) for SegMamba-Haar on BraTS2021.
 
-Mirrors predict.py but loads the Haar variant and a LOCAL Haar checkpoint.
-The original upstream predict.py pointed at a machine-specific path and at
-the baseline SegMamba, so it could not evaluate Haar runs on this machine.
+Mirrors 4_predict.py but loads the Haar variant and a LOCAL Haar checkpoint.
+The original 4_predict.py pointed at the author's machine (/home/xingzhaohu/...)
+and at the baseline SegMamba, so it could not evaluate Haar runs on this machine.
 
 Run after training:
-    python predict_haar.py
+    python 4_predict_haar.py
 It auto-discovers the best_model_*.pt with the highest Dice under
 ./logs/segmamba_haar_brats2021_so8_dicece/  (override with HAAR_CKPT env var).
 """
@@ -35,7 +35,7 @@ num_gpus = 1
 device = "cuda:0"
 patch_size = [128, 128, 128]
 
-# ---- Haar model config: MUST match train_brats2021_haar.py ----
+# ---- Haar model config: MUST match 3_train_brats2021_haar.py ----
 wavelet_mode = "so8"
 learnable_wavelet = True
 gsc_checkpoint = False
@@ -53,7 +53,7 @@ def _find_haar_checkpoint():
     if not cands:
         raise FileNotFoundError(
             f"No Haar checkpoint found under {haar_logdir!r}. "
-            "Train with train_brats2021_haar.py first, or set HAAR_CKPT.")
+            "Train with 3_train_brats2021_haar.py first, or set HAAR_CKPT.")
     return cands[0]
 
 

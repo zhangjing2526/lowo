@@ -51,8 +51,8 @@ class BraTSTrainer(Trainer):
                         feat_size=[48, 96, 192, 384])
 
         # local baseline checkpoint (auto-discover highest-Dice best_model); the
-        # original upstream path is not on this machine. Override with
-        # BASELINE_CKPT env var if needed.
+        # original hard-coded author path (/home/xingzhaohu/...) is not on this
+        # machine. Override with BASELINE_CKPT env var if needed.
         cands = sorted(
             glob.glob("./logs/segmamba_brats2021_dicece/**/model/best_model_*.pt", recursive=True),
             key=lambda p: float(re.search(r"best_model_([0-9.]+)\.pt$", p).group(1))
@@ -62,7 +62,7 @@ class BraTSTrainer(Trainer):
         if model_path is None:
             raise FileNotFoundError(
                 "No local baseline checkpoint under ./logs/segmamba_brats2021_dicece/. "
-                "Train with train_brats2021.py first, or set BASELINE_CKPT.")
+                "Train with 3_train_brats2021.py first, or set BASELINE_CKPT.")
         print(f"[baseline predict] loading checkpoint: {model_path}")
         new_sd = self.filte_state_dict(torch.load(model_path, map_location="cpu"))
         model.load_state_dict(new_sd)

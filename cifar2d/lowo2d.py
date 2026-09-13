@@ -106,3 +106,26 @@ class HaarDownsample2D(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.mix(self.wave.dwt(x))
+
+
+class HWDOfficial2D(HaarDownsample2D):
+    """Official HWD mixer (Xu et al. 2023; apple1986/HWD Down_wt).
+
+    Haar DWT then a dense Conv2d(4C, Cout, 1).  BN/ReLU stay in the
+    ResNet block, as they do after Down_wt's linear 1x1.  Any Q on
+    this DWT has rho=0.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        learnable: bool = False,
+    ):
+        super().__init__(
+            in_channels,
+            out_channels,
+            learnable=learnable,
+            mode="so4",
+            grouped_mix=False,
+        )

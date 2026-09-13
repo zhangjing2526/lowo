@@ -175,6 +175,15 @@ def synthetic() -> None:
     print("\nA2-like  Q=I  (expect rho=0, drift=0)")
     m2 = HaarDownsample2D(16, 32, learnable=False, mode="so4", grouped_mix=True)
     audit(m2.state_dict())
+    from lowo2d import HWDOfficial2D
+
+    print("\nHWD official mixer + learned Q  (expect rho=0, drift>0)")
+    hq = HWDOfficial2D(16, 32, learnable=True)
+    with torch.no_grad():
+        hq.wave.skew.copy_(m6.wave.skew)
+    audit(hq.state_dict())
+    print("\nHWD official  Q=I  (expect rho=0, drift=0)")
+    audit(HWDOfficial2D(16, 32, learnable=False).state_dict())
 
 
 def main() -> None:

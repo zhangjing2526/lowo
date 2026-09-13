@@ -1,4 +1,4 @@
-"""Verify the absorption identity behind LOWO's local-identifiability claim.
+"""Checkpoint-only absorption audit for LOWO's learned orthogonal transform.
 
 The 3D DWT in ``lowo.py`` emits subband-major channels (index ``s*C + c``), and
 its analysis kernel is ``K = Q @ K_haar``.  Therefore the learned orthogonal
@@ -330,7 +330,7 @@ def main() -> None:
                     help="LOWO checkpoint (.pt). Omit when using --synthetic.")
     ap.add_argument("--synthetic", action="store_true",
                     help="run on random Q,W (CPU, no file). Does not reproduce "
-                         "the paper's 7.8e-15 figure; use a real checkpoint "
+                         "the paper's 5.9e-15 figure; use a real checkpoint "
                          "for that.")
     ap.add_argument("--in-chans", type=int, default=4,
                     help="input modalities feeding downsample_layers.0")

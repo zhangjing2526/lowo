@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 
 from resnet_lowo import build_model
 
-ARMS = ("B0", "A2", "A5", "A6")
+ARMS = ("B0", "A2", "A5", "A6", "HWD", "HWDQ")
 
 
 def set_seed(seed: int) -> None:
