@@ -1,27 +1,19 @@
 """Config-driven test-set evaluation for SegMamba / Haar(LOWO) / SegAttn variants.
 
-Why this script exists
-----------------------
-The two existing eval scripts (``analyze_errors_brats2021.py`` and
-``evaluate_tta_postproc.py``) hard-code ``SegMamba`` and therefore cannot
-evaluate any Haar/LOWO/SegAttn checkpoint.  Training itself was launched with
-the model architecture taken from per-experiment config YAMLs (the training
-scripts keep the *values* in module-level variables; the YAML is the source of
-truth for each run).  This driver builds the model **from the config** so the
-architecture (incl. ``grouped_mix``, ``per_channel_*``, ``use_routing``, ...)
-exactly matches the checkpoint, then runs the unified protocol:
+The existing eval scripts hard-code ``SegMamba``, so this driver builds the
+model from the config YAML (matching ``grouped_mix``, ``per_channel_*``,
+``use_routing``, ...) and runs the unified protocol:
 
     * 8-way mirror Test-Time Augmentation (logit averaging)
-    * sliding-window inference, overlap = 0.7 (consensus setting)
+    * sliding-window inference, overlap = 0.7
     * ET -> NCR total-volume-threshold postprocessing (nnU-Net BraTS style)
     * per-case Dice + HD95 + FP/FN + boundary/interior error split
-    * writes ``per_case_metrics.csv`` in the exact format of
-      ``analyze_errors_brats2021.py`` (so existing aggregate tooling works)
+    * writes ``per_case_metrics.csv`` in the same format as
+      ``analyze_errors_brats2021.py``
 
 Usage
 -----
     # validate ONE variant on CPU (no GPU, no data needed):
-    # (ckpt_dir / out_dir are now derived from a single --data_root)
     python run_test_eval.py --config configs/exp6d_segmamba_haar_fixed_g8.yaml \
         --ckpt_dir <data_root>/segmamba_haar_fixed_g8 --dry_run
 
@@ -34,9 +26,8 @@ Usage
     python run_test_eval.py --manifest test_eval_manifest.py --index 0 \
         --data_root /data/zhangjing/mamba
 
-The dry-run is the important safety net: it builds the model from the config
-and does a STRICT ``load_state_dict`` on CPU.  If the config does not match the
-checkpoint architecture, it fails loudly *before* you burn GPU time.
+The dry-run builds the model from the config and does a STRICT
+``load_state_dict`` on CPU.  A mismatch fails loudly before burning GPU time.
 """
 import argparse
 import csv
@@ -130,7 +121,7 @@ def filte_state_dict(sd):
 # checkpoint trained before deep supervision existed can still be evaluated
 # faithfully by leaving them at their random init.
 #
-# NOTE: `*.wave.skew` (the SO(8) generator) is deliberately NOT ignorable --
+# NOTE: `*.wave.skew` (the SO(8) generator) is NOT ignorable --
 # a missing skew means the wavelet basis itself is undefined, so such a
 # checkpoint would produce meaningless output and must still be SKIPped.
 IGNORABLE_MISSING = ("ds_out",)

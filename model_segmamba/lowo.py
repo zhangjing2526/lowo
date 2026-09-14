@@ -2,8 +2,7 @@
 #
 # A backbone-agnostic, drop-in replacement for spatial down/up-sampling and
 # (equal-channel) spatial convolutions, based on a learnable 3D Haar wavelet
-# transform. This module is deliberately FREE of any mamba / attention / UNet
-# dependency: it only imports torch, so it can be imported from a CNN,
+# transform. This module has no mamba / attention / UNet dependency: it only imports torch, so it can be imported from a CNN,
 # attention, or SSM backbone without pulling in mamba_ssm or MONAI.
 #
 # Strict "replacement" (not an add-on branch) of:

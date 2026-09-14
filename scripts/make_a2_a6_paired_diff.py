@@ -1,78 +1,94 @@
-#!/usr/bin/env python3
-"""Regenerate the A2-vs-A6 paired-difference figure (paper Fig: a2_a6_paired_diff.pdf).
+"""Compact A2 vs A6 paired-difference dumbbell (ICASSP single column).
 
-One row per seed; each pair is the mean held-out Dice of A2 (fixed Haar, Q=I)
-and A6 (SO(8), Q learned) on the *same* 250 BraTS2021 volumes. The difference
-changes sign on the third seed (+0.79, +0.85, -0.85), so a load-bearing learned
-factor produces no stable Dice direction -- the figure behind the paper's
-"non-removability is necessary but not sufficient for a gain" claim.
+One row per training seed.  The visual is the sign flip, not mean+/-std.
 
-The three per-seed means are taken verbatim from the paper's main table
-(seeds 123 / 456 / 789).  Edit `A2` / `A6` below to regenerate from a fresh run.
-
-Usage:
-    python scripts/make_a2_a6_paired_diff.py [--out figs/a2_a6_paired_diff.pdf]
+    python make_a2_a6_paired_diff.py
 """
-from __future__ import annotations
-
-import argparse
+import os
 
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
-# mean held-out Dice per seed (123, 456, 789) -- paper Table 1
-A2 = [0.9017, 0.9016, 0.8936]   # fixed Haar, Q = I, groups = 8
-A6 = [0.8938, 0.8931, 0.9021]   # SO(8), Q learned,   groups = 8
-SEEDS = ["123", "456", "789"]
+ROOT = r'G:\material\天枢\mamba'
 
-A2_COL = "#185FA5"   # blue  (circles)
-A6_COL = "#D85A30"   # coral (squares)
+plt.rcParams.update({
+    'pdf.fonttype': 42,
+    'ps.fonttype': 42,
+    'font.family': 'serif',
+    'font.serif': ['Times New Roman', 'DejaVu Serif', 'Liberation Serif',
+                   'Nimbus Roman', 'serif'],
+    'font.size': 6.5,
+    'axes.linewidth': 0.6,
+    'axes.labelsize': 6.5,
+    'xtick.labelsize': 6.0,
+    'ytick.labelsize': 6.5,
+    'xtick.major.width': 0.6,
+    'ytick.major.width': 0.6,
+    'xtick.direction': 'in',
+    'ytick.direction': 'in',
+    'xtick.top': True,
+    'ytick.right': False,
+    'lines.linewidth': 0.85,
+})
 
+# Held-out mean Dice; deltas are Dice points (x100), matching the manuscript.
+seeds = [
+    dict(name='123', a2=0.9017, a6=0.8938, delta=+0.79),
+    dict(name='456', a2=0.9016, a6=0.8931, delta=+0.85),
+    dict(name='789', a2=0.8936, a6=0.9021, delta=-0.85),
+]
 
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="figs/a2_a6_paired_diff.pdf",
-                    help="output PDF path")
-    ap.add_argument("--dpi", type=int, default=200)
-    args = ap.parse_args()
+NAVY = '#1f4e79'
+RED = '#c0392b'
 
-    fig, ax = plt.subplots(figsize=(3.35, 2.7))
-    y_ticks, y_labels = [], []
-    for i, (a2, a6, s) in enumerate(zip(A2, A6, SEEDS)):
-        y = -i
-        d = a2 - a6
-        # a short connector between the two points of the pair
-        ax.plot([a2, a6], [y, y], color="#888888", lw=0.8, zorder=1)
-        ax.scatter(a2, y, s=34, marker="o", color=A2_COL, zorder=3,
-                   label="A2 (fixed Haar)" if i == 0 else None)
-        ax.scatter(a6, y, s=34, marker="s", color=A6_COL, zorder=3,
-                   label="A6 (SO(8), learned)" if i == 0 else None)
-        # signed delta annotation in Dice POINTS (x100), matching the paper
-        # Table 1 row "A2-A6" (+0.79 / +0.85 / -0.85).
-        xmid = (a2 + a6) / 2
-        ax.annotate(f"{d * 100:+.2f}", xy=(xmid, y), xytext=(0, 7),
-                    textcoords="offset points", ha="center", va="bottom",
-                    fontsize=6.5, color="#333333")
-        y_ticks.append(y)
-        y_labels.append(f"seed {s}")
-    ax.set_yticks(y_ticks)
-    ax.set_yticklabels(y_labels, fontsize=7)
-    ax.set_xlabel("mean held-out Dice (TC/WT/ET)", fontsize=7)
-    ax.set_xlim(0.88, 0.91)
-    ax.set_xticks([0.88, 0.89, 0.90, 0.91])
-    ax.tick_params(axis="x", labelsize=6.5)
-    ax.set_title("Task utility where a generic Q is not removable\n"
-                 "A2 vs A6, same 250 volumes", fontsize=7.5)
-    ax.legend(fontsize=6, loc="lower right", framealpha=0.9)
-    ax.grid(axis="x", ls=":", lw=0.4, color="#cccccc")
-    for sp in ("top", "right"):
-        ax.spines[sp].set_visible(False)
-    fig.tight_layout()
-    fig.savefig(args.out, dpi=args.dpi, bbox_inches="tight")
-    print(f"[paired] wrote {args.out}  (A2-A6 per seed, Dice points: "
-          f"{[round((a-b)*100, 2) for a, b in zip(A2, A6)]})")
+fig, ax = plt.subplots(figsize=(3.39, 1.18))
+ys = [2, 1, 0]
 
+ax.set_axisbelow(True)
+ax.grid(axis='x', linestyle='--', linewidth=0.35, color='#c9c9c9', alpha=0.75)
 
-if __name__ == "__main__":
-    main()
+for y, r in zip(ys, seeds):
+    color = NAVY if r['delta'] > 0 else RED
+    lo, hi = min(r['a2'], r['a6']), max(r['a2'], r['a6'])
+    ax.plot([lo, hi], [y, y], color=color, lw=1.35,
+            solid_capstyle='round', zorder=2)
+    ax.scatter([r['a2']], [y], s=28, marker='o', color=NAVY, zorder=3,
+               edgecolors='white', linewidths=0.4)
+    ax.scatter([r['a6']], [y], s=28, marker='s', color=RED, zorder=3,
+               edgecolors='white', linewidths=0.4)
+    sign = '+' if r['delta'] > 0 else ''
+    ax.text(hi + 0.00055, y, r'$%s%.2f$' % (sign, r['delta']),
+            ha='left', va='center', fontsize=6.2, color=color)
+
+ax.set_yticks(ys)
+ax.set_yticklabels([r'seed %s' % r['name'] for r in seeds])
+ax.set_xlabel('held-out Dice', labelpad=1.8)
+ax.set_xlim(0.8916, 0.9068)
+ax.set_ylim(-0.62, 3.05)
+ax.set_xticks([0.894, 0.898, 0.902])
+ax.tick_params(axis='y', length=0, pad=2.2)
+ax.tick_params(axis='x', length=2.5)
+
+for spine in ('top', 'right', 'left'):
+    ax.spines[spine].set_visible(False)
+
+legend = [
+    Line2D([0], [0], marker='o', color='none', markerfacecolor=NAVY,
+           markeredgecolor='none', markersize=5.0, label=r'A2 (frozen $Q{=}I$)'),
+    Line2D([0], [0], marker='s', color='none', markerfacecolor=RED,
+           markeredgecolor='none', markersize=4.6, label=r'A6 (learned $Q$)'),
+]
+ax.legend(handles=legend, loc='upper left', frameon=True,
+          facecolor='white', edgecolor='#b0b0b0', framealpha=0.82,
+          fontsize=5.8, handletextpad=0.35, borderpad=0.35,
+          labelspacing=0.28, ncol=2, bbox_to_anchor=(0.0, 1.02),
+          columnspacing=1.1)
+
+fig.tight_layout(pad=0.28)
+out = os.path.join(ROOT, 'figs', 'a2_a6_paired_diff.pdf')
+fig.savefig(out, bbox_inches='tight', pad_inches=0.02)
+fig.savefig(out.replace('.pdf', '.png'), dpi=300,
+            bbox_inches='tight', pad_inches=0.02)
+print('wrote', out)

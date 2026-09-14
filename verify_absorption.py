@@ -26,9 +26,9 @@ sides.  With ``R = Q kron I_C`` the Haar-coordinate mixer is
 ``W' = R^T @ W @ R``, ``b' = R^T @ b`` --- not the one-sided ``W @ R`` that
 applies to a lone analysis mixer.
 
-Absorption is assessed layer-locally, which is what matters here: the operator
-immediately following each mixer is a channel-wise normalisation, so a
-cross-channel linear factor cannot be commuted any further downstream.
+Absorption is assessed layer-locally: the operator immediately following each
+mixer is a channel-wise normalisation, so a cross-channel linear factor cannot
+be commuted any further downstream.
 
 Runs on CPU from a checkpoint alone: no data, no GPU, no model construction.
 With ``--synthetic``, random Q and mixers are enough to exercise the identity

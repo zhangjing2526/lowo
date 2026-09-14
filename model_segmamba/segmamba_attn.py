@@ -38,8 +38,7 @@ class WindowAttnLayer(nn.Module):
     Same contract as MambaLayer: (B, C, D, H, W) -> (B, C, D, H, W), with the
     residual applied inside the block. Internally wraps MONAI's
     SwinTransformerBlock (pre-norm window attention + FFN), i.e. the standard
-    attention block used by SwinUNETR, so reviewers get a familiar, well-tuned
-    attention baseline rather than a bespoke one.
+    attention block used by SwinUNETR, matching that architecture's default.
 
     Args:
         dim: feature channels (must be divisible by num_heads).
@@ -100,49 +99,35 @@ class WindowAttnLayer(nn.Module):
 
 
 class RoutedWindowAttn(nn.Module):
-    """Routing wrapper around :class:`WindowAttnLayer` — **soft supernet probe**.
+    """Routing wrapper around :class:`WindowAttnLayer`.
 
-    Two semantics, deliberately kept distinct:
-
-    **Training (``gate_hardness`` controls the blend)**::
+    ``gate_hardness`` selects the blend used during training::
 
         g   = sigmoid(Linear(token_features) + rf_prior)
-        # soft  : out = g*Attn(x) + (1-g)*(x + MlpChannel(x))        (supernet)
+        # soft  : out = g*Attn(x) + (1-g)*(x + MlpChannel(x))
         # ste   : out = hard_mask*Attn + (1-mask)*(x+Mixer)  fwd,
         #         soft gradient bwd  (straight-through estimator)
         # gumbel: out = GumbelSoftmax([g,-g]; tau)[0]*Attn
         #              + [...] [1]*(x+Mixer)   (tau annealed -> hard)
 
-    The default ``"soft"`` mode is the supernet probe: both branches are
-    computed and softly blended, so it does NOT save FLOPs (slightly more
-    expensive than plain WindowAttnLayer). ``"ste"`` and ``"gumbel"`` instead
-    train the net to be robust *under* hard routing — the forward sees a
-    discrete branch choice while gradients still reach both branches — which
-    shrinks the soft->hard Dice gap measured at eval. All three answer the
-    probe questions; the harder modes are the v0.5->v1.0 upgrade path.
+    ``"soft"`` computes both branches and blends them (no FLOP saving).
+    ``"ste"`` and ``"gumbel"`` apply a discrete branch choice in the forward
+    while keeping gradients for both branches.
 
-    The mixer branch carries a residual (``x + mixer(x)``) so that it is
-    structurally symmetric with the attention branch — SwinTransformerBlock
-    already applies its own residual internally — otherwise a gate sliding
-    toward 0 would jump the representation from a residual stream to a bare
-    MLP output and contaminate the probe.
+    The mixer branch carries a residual (``x + mixer(x)``) so it is
+    structurally symmetric with the attention branch, which already applies
+    its own residual internally.
 
-    **Evaluation with ``hard_routing=True`` (conditional compute)**: the
-    block-level mean gate decides ONE branch; the unselected branch is not
-    computed at all (real FLOPs/latency saving, measurable per block). This
-    is the deploy-time semantics the paper narrative eventually needs. Note
-    per-token dispatch is NOT implemented: window attention's atom is the 7^3
-    window, so token-level hard routing cannot skip compute without breaking
-    window structure — per-window dispatch is the production upgrade.
+    With ``hard_routing=True`` a single block-level mean gate selects one
+    branch; the other is not computed. Per-token dispatch is not implemented:
+    window attention operates on 7^3 windows.
 
-    ``rf_prior`` is a per-stage learnable scalar injecting the
-    receptive-field prior: deeper stages (larger Haar downsampling -> local
-    multi-scale context already in the token) are initialised negative (bias
-    toward the cheap mixer), shallow stages positive (toward attention).
+    ``rf_prior`` is a per-stage learnable scalar: deeper stages start
+    negative (bias toward the cheap mixer), shallow stages positive (toward
+    attention).
 
-    Stats bookkeeping keeps everything as detached 0-dim GPU tensors (no
-    ``.item()`` -> no host sync per forward); ``collect_gate_stats`` converts
-    to floats at the caller's chosen interval.
+    Gate stats are kept as detached 0-dim GPU tensors; ``collect_gate_stats``
+    converts them to floats at the caller's chosen interval.
     """
 
     def __init__(self, dim, num_heads=None, window_size=(7, 7, 7),
@@ -173,7 +158,7 @@ class RoutedWindowAttn(nn.Module):
         self.rf_prior = nn.Parameter(torch.tensor(float(init)))
         self.stage_idx = stage_idx
         self.block_idx = block_idx
-        # deploy-time conditional compute (off during soft training)
+        # Hard inference-time conditional compute, off during soft training.
         self.hard_routing = False
         self.routing_threshold = routing_threshold
         # cached hard-routing decision. For fixed-input benchmarks (same x every

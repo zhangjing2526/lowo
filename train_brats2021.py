@@ -268,7 +268,7 @@ class BraTSTrainer(Trainer):
         if hasattr(self.model, "set_gate_epoch"):
             self.model.set_gate_epoch(self.epoch)
 
-        # gate 统计按间隔采集: collect 时才做 GPU->host 同步, 不每步都做
+        # gate stats are sampled at fixed intervals; host sync only on collect
         log_routing = bool(self.cfg.get("log_routing", False))
         gate_every = max(1, int(self.cfg.get("gate_log_interval", 25)))
         want_stats = log_routing and (self.global_step % gate_every == 0)
@@ -408,11 +408,7 @@ class BraTSTrainer(Trainer):
         # returned list: soft_dice[3] + soft_hd95[3]
         dices = soft_dice + soft_hd95
 
-        # ── conditional-routing probe: hard (deploy-time) second pass ──
-        # 协议要求「软训练 → 分别评 soft / hard Dice + 跳过比例」，这里自动
-        # 追加 hard 遍。返回 list 末尾多出 7 个元素，trainer 会按位置转置，
-        # validation_end 里 dices[6:] 即 hard 指标。best-model 选择仍用
-        # soft mean_dice，hard 指标纯诊断。
+        # Conditional-routing probe: hard second pass at inference.
         if getattr(self, "_routing_probe", None) is None:
             self._routing_probe = (bool(self.cfg.get("use_routing", False))
                                    and hasattr(self.model, "set_hard_routing"))
@@ -480,8 +476,7 @@ class BraTSTrainer(Trainer):
         self.log("et_hd95", et_h, step=self.epoch)
         self.log("mean_hd95", mean_hd95, step=self.epoch)
 
-        # ── hard-routing (deploy-time) diagnostics ────────────────
-        # validation_step 开路由探针时末尾追加 hard Dice[3] + hard HD95[3] + skip
+        # Hard-routing diagnostics.
         if len(dices) > 6:
             tc_hd, wt_hd, et_hd = dices[6].mean(), dices[7].mean(), dices[8].mean()
             hard_mean = (tc_hd + wt_hd + et_hd) / 3

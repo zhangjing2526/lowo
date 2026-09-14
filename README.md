@@ -28,7 +28,7 @@ are exactly removable, every dense mixer gives \(\rho=0\), and only a
 *per-subband* mixer lets a generic rotation become non-removable.  Closing that
 loophole is necessary for attributing a learned basis but **not sufficient** for
 a gain (three seeds: \(+0.79\), \(+0.85\), \(-0.85\) Dice points).  LOWO is our
-controlled testbed; **fixed Haar with a per-subband mixer (3D HWD) is a
+controlled testbed; **fixed Haar with a per-subband mixer (grouped 3D Haar control) is a
 *necessary attribution control* before any claim that a learned factor is
 used** — not a recommended architecture.
 
@@ -42,7 +42,7 @@ used** — not a recommended architecture.
          │ stride-2 conv³D (DWT fused)          (IDWT = same kernel, transposed)
          ▼
   subband-major 8C feature map ──► 1×1 subband mixer
-       groups=1 absorbs Q                 groups=8 can make Q load-bearing
+       groups=1 absorbs Q     groups=8 makes Q locally non-removable under the specified adjacent mixer class
 ```
 
 ---
@@ -68,8 +68,8 @@ used** — not a recommended architecture.
 | `figs/` | The three paper figures (PDF) **plus their editable sources**: the absorption fold (`fig1_absorption.pdf`, source `scripts/fig1_method_overview.py` → `figs/fig1_method_overview.svg`), the audit over 163 sites (`drift_vs_rho.pdf`, source `scripts/make_rho_scatter.py` / `scripts/replot_rho_scatter.py`), and the A2/A6 paired difference (`a2_a6_paired_diff.pdf`, source `scripts/make_a2_a6_paired_diff.py`). |
 | `requirements.txt` | Python dependencies. |
 
-A positive \(\rho\) means \(Q\) is **load-bearing relative to that mixer
-class** (locally non-absorbable).  It is not unique recovery of \(Q\) from
+A positive \(\rho\) means \(Q\) is **locally non-removable under the specified adjacent mixer
+class** (locally non-absorbable by the adjacent mixer).  It is not unique recovery of \(Q\) from
 the network: sign, permutation, and downstream layers remain.
 
 `splits/test_250.txt` and `splits/val_125.txt` are an **internal held-out
@@ -110,13 +110,13 @@ verdicts: whether \(Q\) is frozen at \(I\) (the 0-DOF rung) or trainable
 
 | | mixer `groups=1` | mixer `groups=8` |
 |---|---|---|
-| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` (3D HWD rung on BraTS) |
+| fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` (grouped 3D Haar control on BraTS) |
 | learnable θ (3 DOF) | **A3** `configs/A3_theta_g1.yaml` | **A4** `configs/A4_theta_g8.yaml` |
 | learnable \(Q\in SO(8)\) (28 effective DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
 
-A2 and A6 differ only in whether \(A\) is trainable.  Both use `groups=8`
-on the resampling path, so \(Q\) is locally non-absorbable; learning it
-shows no consistent Dice gain on BraTS.  LOWO replaces, without changing the
+A2 and A6 differ only in whether \(A\) is trainable.  `groups=8` makes a generic
+learned \(Q\) locally non-absorbable; A2 remains the \(Q=I\) control, and learning
+\(Q\) shows no consistent Dice gain on BraTS.  LOWO replaces, without changing the
 backbone, the stem, stride-2 downsampling, transposed upsampling, and an
 equal-channel \(3{\times}3{\times}3\) convolution: **16 filter-bank sites per
 checkpoint**.
@@ -151,7 +151,7 @@ comparable accuracy rather than a demonstrated win, and we do not call the two
 compatible (no pre-specified non-inferiority margin).  The sign reverses once,
 so we report **no stable Dice direction** from the 28 degrees of freedom per
 site under this protocol.  What survives is weaker and more useful: once the
-mixer already makes a generic \(Q\) load-bearing, allocating \(SO(8)\) capacity
+mixer already makes a generic \(Q\) locally non-removable under the specified adjacent mixer class, allocating \(SO(8)\) capacity
 there yields no stable held-out gain.  **Non-removability is necessary for
 attributing a learned basis and not sufficient for a performance claim.**
 
@@ -277,14 +277,14 @@ python run_test_eval.py --config configs/<arm>.yaml \
 
 ResNet-18, no stem DWT.  Haar sites are layer2/3/4 × (main `conv1` + skip) =
 **6 analysis sites**.  Fold is \(W'=WR\) (`groups=1` absorbs; `groups=4` can
-make \(Q\) load-bearing).  There is no sandwich `idwt∘W∘dwt` in this probe.
+make \(Q\) locally non-removable under the specified adjacent mixer class).  There is no sandwich `idwt∘W∘dwt` in this probe.
 
 | Arm | Downsample | Paper analogue |
 |---|---|---|
 | B0 | stride-2 conv | learned resample |
 | A2 | fixed Haar, `groups=4` | 2D HWD |
 | A5 | learnable \(Q\in SO(4)\), `groups=1` | absorbable |
-| A6 | learnable \(Q\in SO(4)\), `groups=4` | load-bearing 6 DOF |
+| A6 | learnable \(Q\in SO(4)\), `groups=4` | locally non-removable under the specified adjacent mixer class, 6 DOF |
 
 `wave.skew` is in a **wd=0** group.  Report official-test top-1 at the best
 validation epoch (5k hold-out from the 50k train split).  Three seeds:
