@@ -1,0 +1,1164 @@
+{
+  "num_inject_layers": 96,
+  "worst_sanity_replay_max": 0.0,
+  "use_cayley_neumann_forced": false,
+  "per_layer": [
+    {
+      "layer": "dinov2.encoder.layer.0.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.67572021484375e-06,
+      "local_absorb_mse": 6.885870996661825e-14,
+      "e2e_input_max": 0.0,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.0.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.52587890625e-05,
+      "local_absorb_mse": 8.685862765795901e-14,
+      "e2e_input_max": 0.0,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.0.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 4.76837158203125e-06,
+      "local_absorb_mse": 9.15397569350258e-15,
+      "e2e_input_max": 0.0,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.0.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 3.337860107421875e-06,
+      "local_absorb_mse": 6.670303991497626e-15,
+      "e2e_input_max": 3.6954879760742188e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.1.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 5.9604644775390625e-06,
+      "local_absorb_mse": 1.4879354801218547e-13,
+      "e2e_input_max": 2.7179718017578125e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.1.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.059906005859375e-06,
+      "local_absorb_mse": 2.394070185152142e-13,
+      "e2e_input_max": 2.7179718017578125e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.1.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 5.245208740234375e-06,
+      "local_absorb_mse": 4.5268351106476576e-14,
+      "e2e_input_max": 2.7179718017578125e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.1.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 3.5762786865234375e-06,
+      "local_absorb_mse": 1.5865652162275895e-14,
+      "e2e_input_max": 1.1086463928222656e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.10.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.71661376953125e-05,
+      "local_absorb_mse": 7.043697764809453e-13,
+      "e2e_input_max": 7.867813110351562e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.10.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.71661376953125e-05,
+      "local_absorb_mse": 6.766512263695068e-13,
+      "e2e_input_max": 7.867813110351562e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.10.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.62939453125e-06,
+      "local_absorb_mse": 2.302873603615696e-13,
+      "e2e_input_max": 7.867813110351562e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.10.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.2649765014648438e-06,
+      "local_absorb_mse": 1.2805289936594112e-14,
+      "e2e_input_max": 1.3686716556549072e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.11.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.239776611328125e-05,
+      "local_absorb_mse": 4.765404650747262e-13,
+      "e2e_input_max": 7.158517837524414e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.11.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.239776611328125e-05,
+      "local_absorb_mse": 4.2578554614383646e-13,
+      "e2e_input_max": 7.158517837524414e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.11.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.152557373046875e-06,
+      "local_absorb_mse": 2.0853438875874375e-13,
+      "e2e_input_max": 7.158517837524414e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.11.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 4.410743713378906e-06,
+      "local_absorb_mse": 1.2705860127047719e-14,
+      "e2e_input_max": 7.241964340209961e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.12.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.430511474609375e-05,
+      "local_absorb_mse": 4.1879892023928555e-13,
+      "e2e_input_max": 5.918741226196289e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.12.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1444091796875e-05,
+      "local_absorb_mse": 4.764992111820632e-13,
+      "e2e_input_max": 5.918741226196289e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.12.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.5367431640625e-06,
+      "local_absorb_mse": 2.414307902903756e-13,
+      "e2e_input_max": 5.918741226196289e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.12.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 3.4570693969726562e-06,
+      "local_absorb_mse": 1.0452173963848305e-14,
+      "e2e_input_max": 6.258487701416016e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.13.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.6689300537109375e-05,
+      "local_absorb_mse": 5.683697327889259e-13,
+      "e2e_input_max": 4.781782627105713e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.13.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.430511474609375e-05,
+      "local_absorb_mse": 5.487702848562537e-13,
+      "e2e_input_max": 4.781782627105713e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.13.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.152557373046875e-06,
+      "local_absorb_mse": 2.289128901624554e-13,
+      "e2e_input_max": 4.781782627105713e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.13.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 5.0067901611328125e-06,
+      "local_absorb_mse": 1.2372114746269421e-14,
+      "e2e_input_max": 8.38935375213623e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.14.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.33514404296875e-05,
+      "local_absorb_mse": 4.544931867921792e-13,
+      "e2e_input_max": 4.5180320739746094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.14.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.5367431640625e-06,
+      "local_absorb_mse": 4.494509690637638e-13,
+      "e2e_input_max": 4.5180320739746094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.14.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.239776611328125e-05,
+      "local_absorb_mse": 2.68989285056101e-13,
+      "e2e_input_max": 4.5180320739746094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.14.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 3.337860107421875e-06,
+      "local_absorb_mse": 1.1313829240871057e-14,
+      "e2e_input_max": 8.13603401184082e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.15.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.239776611328125e-05,
+      "local_absorb_mse": 4.805742934675672e-13,
+      "e2e_input_max": 3.55839729309082e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.15.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.3828277587890625e-05,
+      "local_absorb_mse": 4.690457007169857e-13,
+      "e2e_input_max": 3.55839729309082e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.15.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.198883056640625e-06,
+      "local_absorb_mse": 2.002474114260952e-13,
+      "e2e_input_max": 3.55839729309082e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.15.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 5.4836273193359375e-06,
+      "local_absorb_mse": 1.216545480076537e-14,
+      "e2e_input_max": 1.9669532775878906e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.16.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.52587890625e-05,
+      "local_absorb_mse": 4.744012799783037e-13,
+      "e2e_input_max": 3.612041473388672e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.16.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1920928955078125e-05,
+      "local_absorb_mse": 4.520112311789254e-13,
+      "e2e_input_max": 3.612041473388672e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.16.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.430511474609375e-05,
+      "local_absorb_mse": 2.504195852418012e-13,
+      "e2e_input_max": 3.612041473388672e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.16.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.9141387939453125e-06,
+      "local_absorb_mse": 1.7002997181872134e-14,
+      "e2e_input_max": 4.8160552978515625e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.17.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1920928955078125e-05,
+      "local_absorb_mse": 4.45662468517502e-13,
+      "e2e_input_max": 5.054473876953125e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.17.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.193450927734375e-05,
+      "local_absorb_mse": 3.94585189175678e-13,
+      "e2e_input_max": 5.054473876953125e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.17.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.239776611328125e-05,
+      "local_absorb_mse": 2.279407402844963e-13,
+      "e2e_input_max": 5.054473876953125e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.17.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 8.106231689453125e-06,
+      "local_absorb_mse": 2.3885768376760187e-14,
+      "e2e_input_max": 0.0005595684051513672,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.18.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.7642974853515625e-05,
+      "local_absorb_mse": 5.701161656483655e-13,
+      "e2e_input_max": 0.0004763603210449219,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.18.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.2874603271484375e-05,
+      "local_absorb_mse": 4.387171507157228e-13,
+      "e2e_input_max": 0.0004763603210449219,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.18.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 8.106231689453125e-06,
+      "local_absorb_mse": 1.8490032638665554e-13,
+      "e2e_input_max": 0.0004763603210449219,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.18.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1444091796875e-05,
+      "local_absorb_mse": 1.7713234308144865e-14,
+      "e2e_input_max": 0.0006112456321716309,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.19.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.52587890625e-05,
+      "local_absorb_mse": 6.309474969400097e-13,
+      "e2e_input_max": 0.0010743141174316406,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.19.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9550323486328125e-05,
+      "local_absorb_mse": 5.070538715463979e-13,
+      "e2e_input_max": 0.0010743141174316406,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.19.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.152557373046875e-06,
+      "local_absorb_mse": 2.402119031030131e-13,
+      "e2e_input_max": 0.0010743141174316406,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.19.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.33514404296875e-05,
+      "local_absorb_mse": 2.207599778165665e-14,
+      "e2e_input_max": 8.344650268554688e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.2.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.3909759521484375e-06,
+      "local_absorb_mse": 2.1572052141555914e-13,
+      "e2e_input_max": 1.531839370727539e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.2.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.867813110351562e-06,
+      "local_absorb_mse": 2.506647504580545e-13,
+      "e2e_input_max": 1.531839370727539e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.2.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 4.291534423828125e-06,
+      "local_absorb_mse": 1.0728103924965635e-13,
+      "e2e_input_max": 1.531839370727539e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.2.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9669532775878906e-06,
+      "local_absorb_mse": 7.26645255603878e-15,
+      "e2e_input_max": 6.452202796936035e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.20.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9073486328125e-05,
+      "local_absorb_mse": 6.805791824202045e-13,
+      "e2e_input_max": 0.001430511474609375,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.20.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.0967254638671875e-05,
+      "local_absorb_mse": 5.38880897370253e-13,
+      "e2e_input_max": 0.001430511474609375,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.20.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.198883056640625e-06,
+      "local_absorb_mse": 2.413260563605135e-13,
+      "e2e_input_max": 0.001430511474609375,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.20.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.152557373046875e-06,
+      "local_absorb_mse": 1.2641289111412629e-14,
+      "e2e_input_max": 7.146596908569336e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.21.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.288818359375e-05,
+      "local_absorb_mse": 7.535488075541275e-13,
+      "e2e_input_max": 0.0022687911987304688,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.21.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.5735626220703125e-05,
+      "local_absorb_mse": 6.329235096094732e-13,
+      "e2e_input_max": 0.0022687911987304688,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.21.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 8.344650268554688e-06,
+      "local_absorb_mse": 2.8804487007400015e-13,
+      "e2e_input_max": 0.0022687911987304688,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.21.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.0013580322265625e-05,
+      "local_absorb_mse": 1.4565808953946602e-14,
+      "e2e_input_max": 0.00015780329704284668,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.22.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.002716064453125e-05,
+      "local_absorb_mse": 7.759495628499591e-13,
+      "e2e_input_max": 0.0011922121047973633,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.22.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9073486328125e-05,
+      "local_absorb_mse": 7.937592640464008e-13,
+      "e2e_input_max": 0.0011922121047973633,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.22.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.198883056640625e-06,
+      "local_absorb_mse": 2.7289189788101686e-13,
+      "e2e_input_max": 0.0011922121047973633,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.22.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9073486328125e-05,
+      "local_absorb_mse": 4.8724479312367563e-14,
+      "e2e_input_max": 0.0002046823501586914,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.23.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9073486328125e-05,
+      "local_absorb_mse": 7.367365723563724e-13,
+      "e2e_input_max": 0.0010204315185546875,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.23.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1920928955078125e-05,
+      "local_absorb_mse": 5.382530901022753e-13,
+      "e2e_input_max": 0.0010204315185546875,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.23.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.059906005859375e-06,
+      "local_absorb_mse": 2.6384721230759967e-13,
+      "e2e_input_max": 0.0010204315185546875,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.23.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.52587890625e-05,
+      "local_absorb_mse": 5.639929915777185e-14,
+      "e2e_input_max": 7.927417755126953e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.3.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.059906005859375e-06,
+      "local_absorb_mse": 4.0584885712541263e-13,
+      "e2e_input_max": 1.0520219802856445e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.3.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.5367431640625e-06,
+      "local_absorb_mse": 3.8770080353599246e-13,
+      "e2e_input_max": 1.0520219802856445e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.3.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.059906005859375e-06,
+      "local_absorb_mse": 2.66262435277137e-13,
+      "e2e_input_max": 1.0520219802856445e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.3.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.2649765014648438e-06,
+      "local_absorb_mse": 1.9297323138847862e-14,
+      "e2e_input_max": 7.62939453125e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.4.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.621246337890625e-05,
+      "local_absorb_mse": 5.13600772154843e-13,
+      "e2e_input_max": 1.990795135498047e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.4.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 9.5367431640625e-06,
+      "local_absorb_mse": 4.190049728621664e-13,
+      "e2e_input_max": 1.990795135498047e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.4.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.67572021484375e-06,
+      "local_absorb_mse": 1.9321073603875694e-13,
+      "e2e_input_max": 1.990795135498047e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.4.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 4.0531158447265625e-06,
+      "local_absorb_mse": 3.6036545790615535e-14,
+      "e2e_input_max": 6.027519702911377e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.5.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.0967254638671875e-05,
+      "local_absorb_mse": 4.327267439773602e-13,
+      "e2e_input_max": 2.300739288330078e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.5.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.33514404296875e-05,
+      "local_absorb_mse": 4.184035388120344e-13,
+      "e2e_input_max": 2.300739288330078e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.5.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.867813110351562e-06,
+      "local_absorb_mse": 2.3631514496982864e-13,
+      "e2e_input_max": 2.300739288330078e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.5.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.205371856689453e-06,
+      "local_absorb_mse": 1.242269277761587e-14,
+      "e2e_input_max": 7.62939453125e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.6.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1444091796875e-05,
+      "local_absorb_mse": 5.360318309013956e-13,
+      "e2e_input_max": 3.3736228942871094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.6.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.1205673217773438e-05,
+      "local_absorb_mse": 4.954658103066556e-13,
+      "e2e_input_max": 3.3736228942871094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.6.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 5.9604644775390625e-06,
+      "local_absorb_mse": 1.8532743427997905e-13,
+      "e2e_input_max": 3.3736228942871094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.6.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 3.933906555175781e-06,
+      "local_absorb_mse": 2.297575852987753e-14,
+      "e2e_input_max": 1.823902130126953e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.7.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 7.62939453125e-06,
+      "local_absorb_mse": 2.941360805093496e-13,
+      "e2e_input_max": 3.981590270996094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.7.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 8.106231689453125e-06,
+      "local_absorb_mse": 2.9911454715002284e-13,
+      "e2e_input_max": 3.981590270996094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.7.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 6.198883056640625e-06,
+      "local_absorb_mse": 2.3309563372368725e-13,
+      "e2e_input_max": 3.981590270996094e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.7.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.682209014892578e-06,
+      "local_absorb_mse": 6.2329381056663944e-15,
+      "e2e_input_max": 5.364418029785156e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.8.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.7642974853515625e-05,
+      "local_absorb_mse": 7.906725946714432e-13,
+      "e2e_input_max": 5.6743621826171875e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.8.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.1457672119140625e-05,
+      "local_absorb_mse": 7.299034965844997e-13,
+      "e2e_input_max": 5.6743621826171875e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.8.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 5.9604644775390625e-06,
+      "local_absorb_mse": 1.7768265699914798e-13,
+      "e2e_input_max": 5.6743621826171875e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.8.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 3.814697265625e-06,
+      "local_absorb_mse": 1.7756026412640152e-14,
+      "e2e_input_max": 1.3947486877441406e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.9.attention.attention.key",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.9073486328125e-05,
+      "local_absorb_mse": 7.077516741074708e-13,
+      "e2e_input_max": 7.009506225585938e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.9.attention.attention.query",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 1.4781951904296875e-05,
+      "local_absorb_mse": 5.737976825452573e-13,
+      "e2e_input_max": 7.009506225585938e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.9.attention.attention.value",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 8.106231689453125e-06,
+      "local_absorb_mse": 2.0736189187183646e-13,
+      "e2e_input_max": 7.009506225585938e-05,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    },
+    {
+      "layer": "dinov2.encoder.layer.9.attention.output.dense",
+      "sanity_replay_max": 0.0,
+      "local_absorb_max": 2.2649765014648438e-06,
+      "local_absorb_mse": 1.4851602952547886e-14,
+      "e2e_input_max": 8.702278137207031e-06,
+      "input_shape": [
+        8,
+        257,
+        1024
+      ]
+    }
+  ],
+  "adapter_sha256": "4b2a81dcfd8ab809e7c70450cc929362f588889bbf7c28dd906e970aeb7400cd",
+  "adapter_config_sha256": "ea802098a344ebcb6b1bedd22ce6839d708c884f1afe530c9bb443f5763a1582",
+  "peft_version": "0.13.2",
+  "transformers_version": "4.39.3",
+  "torch_version": "2.6.0+cu126"
+}

@@ -65,6 +65,8 @@ used** — not a recommended architecture.
 | `splits/test_250.txt` | Frozen 250-case **internal held-out** list used in the paper (not the official BraTS test set). |
 | `splits/val_125.txt` | Frozen 125-case validation list used for checkpoint selection. |
 | `cifar2d/` | 2D probe: \(SO(4)\) Haar downsample on CIFAR ResNet-18. Analysis fold only (`mix(dwt(x))`). Scripts, no weights. |
+| `scripts/fold_sandwich_projection.py` (+ `fold_all_sites_check.py`, `fold_audit_supplement.py`, `repro_s32_sandwich_dice.py`) | **§3.2 grouped-sandwich Dice audit** — from the A6 checkpoint, pick low/mid/high-ρ sandwich sites and build exact-reparam vs forced shared-block variants; reports mean Dice change (<4×10⁻⁶) and worst-case drift (0.0038→0.344) on the frozen 250 cases. |
+| `oft_absorption_audit/` | External-operator OFT merge audit: a self-trained OFT adapter on a public DINOv2 ViT-Large backbone. 12 scripts + report JSONs; detailed experiment notes in `oft_absorption_audit/README.md`. |
 | `figs/` | The three paper figures (PDF) **plus their editable sources**: the absorption fold (`fig1_absorption.pdf`, source `scripts/fig1_method_overview.py` → `figs/fig1_method_overview.svg`), the audit over 163 sites (`drift_vs_rho.pdf`, source `scripts/make_rho_scatter.py` / `scripts/replot_rho_scatter.py`), and the A2/A6 paired difference (`a2_a6_paired_diff.pdf`, source `scripts/make_a2_a6_paired_diff.py`). |
 | `requirements.txt` | Python dependencies. |
 
@@ -273,6 +275,47 @@ python run_test_eval.py --config configs/<arm>.yaml \
     --force_ethr 50 --stage test
 ```
 
+## Grouped-sandwich Dice audit (§3.2)
+
+The last paragraph of §3.2 screens unsafe structural simplification before
+deployment. From the A6 checkpoint it ranks grouped-sandwich sites by escape
+fraction ρ, picks three with low / medium / high ρ (0.166, 0.352, 0.593), and on
+each site builds two variants from the **same** weights:
+
+- **exact reparameterization** — fold `RᵀWR` into a dense 1×1 mixer; an exact
+  identity, so predictions are unchanged up to FP round-off;
+- **forced shared-block projection** — `Π_G8`, keep only the 8 diagonal blocks
+  of the folded mixer; a *forced* simplification that the audit flags unsafe
+  when ρ > 0.
+
+Both variants plus the original are evaluated on the frozen 250 cases
+(`splits/test_250.txt`) and compared per-case. The shipped
+`sandwich_projection_final.json` (next to the scripts) reports: exact reparam
+changes mean Dice by **< 4×10⁻⁶** in all three cases; forced shared-block
+projection raises the worst-case single-case Dice drift from **0.0038 to 0.344**.
+So ρ is a practical pre-deployment screen for unsafe structural simplification.
+
+| Script | Role |
+|---|---|
+| `scripts/repro_s32_sandwich_dice.py` | Portable entry point. Defaults to `configs/A6_so8_g8.yaml` + `splits/test_250.txt`; forwards the rest to the audit. |
+| `scripts/fold_sandwich_projection.py` | The audit itself (≈1010 lines): ρ ranking, variant building, per-case Dice. |
+| `scripts/fold_all_sites_check.py` | Helpers: `find_repo()`, `region_dices`, `haar8`, dense fold. |
+| `scripts/fold_audit_supplement.py` | Helpers: GT Dice, TTA ablation, strict-conjugate (block-diagonal) audit. |
+
+```bash
+# CPU self-check (no ckpt / data / GPU): proves the fold algebra is an identity
+python scripts/repro_s32_sandwich_dice.py --selftest
+
+# Full reproduction on 8×A100 (needs the full A6 ckpt + BraTS data):
+python scripts/repro_s32_sandwich_dice.py \
+    --ckpt <mamba>/test/segmamba_haar_so8live/model/best_model_0.9317.pt \
+    --data_dir <brats2021> --purpose final --out sandwich_projection_final.json
+```
+
+The exact-reparam identity is float64 ≈ 3.7e-16 / fp32 ≈ 1e-6 on CPU; the Dice
+comparison needs the full training checkpoint and BraTS data (not in this repo,
+see "Reproduce a paper arm" above).
+
 ## CIFAR-10 2D probe (`cifar2d/`)
 
 ResNet-18, no stem DWT.  Haar sites are layer2/3/4 × (main `conv1` + skip) =
@@ -300,7 +343,57 @@ python verify_absorption_2d.py runs/a6_s123/best.pt  # after training
 python mcnemar.py --all --runs runs
 ```
 
+### Intervening nonlinearity (§3.4)
+
+The §3.4 "Intervening nonlinearity" check inserts a ReLU between the learned
+transform `R` and the adjacent dense mixer `W` (groups=1) at an audited site,
+then fits a replacement dense mixer `W'` by regularized least squares and
+compares the original `W·ReLU(R z0)` against the fitted linear block
+`W'·ReLU(z0)`. On real CIFAR-10 activations the relative output error is
+**11.6%** (seed 123), versus **< 8.1×10⁻¹⁴** for the linear (no-ReLU) and
+identity (`Q=I`) controls — i.e. the failure is the non-commutation of the
+learned rotation with the pointwise nonlinearity, not the fit. This is why the
+audit assumes a linear adjacency between the folded operators (Theorem 1).
+
+```bash
+cd cifar2d
+python nonlinear_counterexample.py --arm A5 --all-seeds --data-dir data
+# shipped result: cifar2d/nonlinear_counterexample.log
+```
+
+Needs a trained 2D A5 run (`runs/a5_s<seed>/best.pt`) and CIFAR-10 under
+`cifar2d/data/` (not committed).
+
 Needs `torchvision`.  Do not commit `cifar2d/data/` or `cifar2d/runs/`.
+
+## OFT precision probe (external operator)
+
+OFT (orthogonal fine-tuning, Qiu et al.) merges a learned orthogonal adapter
+into the adjacent linear layer by an exact identity in real arithmetic. We
+reproduce this merge on an external operator: a self-trained OFT adapter on a
+public DINOv2 ViT-Large backbone, as an independent implementation check rather
+than a method claim. Its non-identity rotation factors are confirmed loaded and
+active, and the merge is reproduced through an independent branch. Under a
+controlled global comparison, end-to-end classification-logits differences are
+\(3.85\times10^{-3}\) (TF32), \(1.71\times10^{-5}\) (plain FP32), and
+\(3.36\times10^{-14}\) (FP64), consistent with floating-point reassociation, not
+accuracy loss. This shows the audit distinguishes algebraic removability from
+finite-precision nonequivalence; it does not validate the grouped-mixer or
+sandwich criterion, and the adapter's training provenance is only partially
+documented.
+
+```bash
+cd oft_absorption_audit
+python nonidentity_recovery.py   --checkpoint-dir outputs/oft_adapter_checkpoint
+python precision_ablation.py     --checkpoint-dir outputs/oft_adapter_checkpoint
+python fixed_input_layer_replay.py --checkpoint-dir outputs/oft_adapter_checkpoint
+```
+
+Needs PyTorch and a DINOv2 OFT adapter checkpoint (not shipped). The detailed
+experiment log — the earlier \(0.117\) discrepancy trace, identity-control
+checks, layerwise drift, and the floating-point bound — lives in
+`oft_absorption_audit/README.md`; only the controlled global errors above are
+summarized here.
 
 ## License
 

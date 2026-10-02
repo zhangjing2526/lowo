@@ -55,7 +55,7 @@ from pathlib import Path
 
 import torch
 
-REPO = Path(r"G:\material\天枢\mamba\lowo")
+REPO = Path(__file__).resolve().parents[1]
 LOWO_PATH = REPO / "model_segmamba" / "lowo.py"
 DEFAULT_CKPT = REPO / "checkpoints" / "a6_so8_g8_audit.pt"
 # ICASSP spconf \textwidth = 178 mm.  Fig. 2 is a figure* at that width.

@@ -1,0 +1,738 @@
+{
+  "overall_pass": false,
+  "overall_pass_rate": 0.00684931506849315,
+  "global_logit_max_err": 0.11684632301330566,
+  "global_logit_mse": 2.4464394300593995e-05,
+  "per_layer": {
+    "dinov2.embeddings.patch_embeddings.projection": {
+      "pass": true,
+      "max_err": 0.0,
+      "mse": 0.0
+    },
+    "dinov2.encoder.layer.0.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.0050983428955078125,
+      "mse": 8.732117251497584e-09
+    },
+    "dinov2.encoder.layer.0.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.002639293670654297,
+      "mse": 6.930266138738261e-09
+    },
+    "dinov2.encoder.layer.0.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0008027553558349609,
+      "mse": 1.0001898198552794e-09
+    },
+    "dinov2.encoder.layer.0.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0006021261215209961,
+      "mse": 7.304831184384852e-10
+    },
+    "dinov2.encoder.layer.0.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0019540786743164062,
+      "mse": 3.0789017557708576e-08
+    },
+    "dinov2.encoder.layer.0.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0019382238388061523,
+      "mse": 1.407242766759964e-09
+    },
+    "dinov2.encoder.layer.1.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.005292415618896484,
+      "mse": 9.321313854115942e-08
+    },
+    "dinov2.encoder.layer.1.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.003760099411010742,
+      "mse": 5.062139152300915e-08
+    },
+    "dinov2.encoder.layer.1.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0025882720947265625,
+      "mse": 1.480255118480045e-08
+    },
+    "dinov2.encoder.layer.1.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0011394023895263672,
+      "mse": 9.727858518715493e-09
+    },
+    "dinov2.encoder.layer.1.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0034856796264648438,
+      "mse": 8.5962753360036e-08
+    },
+    "dinov2.encoder.layer.1.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.003268003463745117,
+      "mse": 2.6112880746609335e-08
+    },
+    "dinov2.encoder.layer.2.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.002377033233642578,
+      "mse": 7.976623095373725e-08
+    },
+    "dinov2.encoder.layer.2.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0027256011962890625,
+      "mse": 6.631455562455812e-08
+    },
+    "dinov2.encoder.layer.2.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0015151500701904297,
+      "mse": 2.911530394555939e-08
+    },
+    "dinov2.encoder.layer.2.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0007349550724029541,
+      "mse": 8.348568059091122e-09
+    },
+    "dinov2.encoder.layer.2.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.002542257308959961,
+      "mse": 9.152805091616756e-08
+    },
+    "dinov2.encoder.layer.2.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0023348331451416016,
+      "mse": 4.2211262041291775e-08
+    },
+    "dinov2.encoder.layer.3.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.0025866031646728516,
+      "mse": 1.0591529076009465e-07
+    },
+    "dinov2.encoder.layer.3.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0022346973419189453,
+      "mse": 1.0274933970322309e-07
+    },
+    "dinov2.encoder.layer.3.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0019659996032714844,
+      "mse": 5.6180944341122085e-08
+    },
+    "dinov2.encoder.layer.3.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0009646415710449219,
+      "mse": 1.2977582564133172e-08
+    },
+    "dinov2.encoder.layer.3.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0030409693717956543,
+      "mse": 1.273204190965771e-07
+    },
+    "dinov2.encoder.layer.3.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0023859739303588867,
+      "mse": 7.567143001097065e-08
+    },
+    "dinov2.encoder.layer.4.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.002979755401611328,
+      "mse": 1.1247095699218335e-07
+    },
+    "dinov2.encoder.layer.4.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0046596527099609375,
+      "mse": 1.2497132217959006e-07
+    },
+    "dinov2.encoder.layer.4.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.00194549560546875,
+      "mse": 5.336315567205929e-08
+    },
+    "dinov2.encoder.layer.4.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.000794529914855957,
+      "mse": 1.092530599322572e-08
+    },
+    "dinov2.encoder.layer.4.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.003502488136291504,
+      "mse": 7.928552747671347e-08
+    },
+    "dinov2.encoder.layer.4.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0018684864044189453,
+      "mse": 3.7024175725264286e-08
+    },
+    "dinov2.encoder.layer.5.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.0025305747985839844,
+      "mse": 1.1460286941655795e-07
+    },
+    "dinov2.encoder.layer.5.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0021071434020996094,
+      "mse": 1.2007980387807038e-07
+    },
+    "dinov2.encoder.layer.5.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0019481182098388672,
+      "mse": 8.212287383457806e-08
+    },
+    "dinov2.encoder.layer.5.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.000647127628326416,
+      "mse": 5.26424015490079e-09
+    },
+    "dinov2.encoder.layer.5.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.004703521728515625,
+      "mse": 1.2451646114186588e-07
+    },
+    "dinov2.encoder.layer.5.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0014986991882324219,
+      "mse": 2.790288178289302e-08
+    },
+    "dinov2.encoder.layer.6.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.004223823547363281,
+      "mse": 1.6451248541216046e-07
+    },
+    "dinov2.encoder.layer.6.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0035097599029541016,
+      "mse": 1.693371274313904e-07
+    },
+    "dinov2.encoder.layer.6.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0019519329071044922,
+      "mse": 7.217262520953227e-08
+    },
+    "dinov2.encoder.layer.6.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0017402172088623047,
+      "mse": 1.1888970696816159e-08
+    },
+    "dinov2.encoder.layer.6.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0021407604217529297,
+      "mse": 9.804166722915397e-08
+    },
+    "dinov2.encoder.layer.6.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0015857219696044922,
+      "mse": 2.378795116442234e-08
+    },
+    "dinov2.encoder.layer.7.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.0020477771759033203,
+      "mse": 1.1300577540396262e-07
+    },
+    "dinov2.encoder.layer.7.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0020334720611572266,
+      "mse": 1.0834713748408831e-07
+    },
+    "dinov2.encoder.layer.7.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0017197132110595703,
+      "mse": 9.668499956205778e-08
+    },
+    "dinov2.encoder.layer.7.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.000619053840637207,
+      "mse": 3.6146148296722913e-09
+    },
+    "dinov2.encoder.layer.7.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0027310848236083984,
+      "mse": 1.0416386686529222e-07
+    },
+    "dinov2.encoder.layer.7.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.002480745315551758,
+      "mse": 4.6080479876309255e-08
+    },
+    "dinov2.encoder.layer.8.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.005430698394775391,
+      "mse": 3.2031610430749424e-07
+    },
+    "dinov2.encoder.layer.8.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.006017208099365234,
+      "mse": 3.103457686393085e-07
+    },
+    "dinov2.encoder.layer.8.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.002085447311401367,
+      "mse": 1.1527318832804667e-07
+    },
+    "dinov2.encoder.layer.8.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0012459754943847656,
+      "mse": 1.4194646347220896e-08
+    },
+    "dinov2.encoder.layer.8.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.002649068832397461,
+      "mse": 1.2239470947861264e-07
+    },
+    "dinov2.encoder.layer.8.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0013654828071594238,
+      "mse": 2.3055996223320108e-08
+    },
+    "dinov2.encoder.layer.9.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.005481719970703125,
+      "mse": 3.080313888403907e-07
+    },
+    "dinov2.encoder.layer.9.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.005482673645019531,
+      "mse": 3.3488188933006313e-07
+    },
+    "dinov2.encoder.layer.9.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.003100872039794922,
+      "mse": 1.618588925111908e-07
+    },
+    "dinov2.encoder.layer.9.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0014858245849609375,
+      "mse": 1.2570922081067692e-08
+    },
+    "dinov2.encoder.layer.9.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0032253265380859375,
+      "mse": 1.572695822460446e-07
+    },
+    "dinov2.encoder.layer.9.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0010585524141788483,
+      "mse": 1.3931686027035539e-08
+    },
+    "dinov2.encoder.layer.10.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.00490117073059082,
+      "mse": 4.333125218636269e-07
+    },
+    "dinov2.encoder.layer.10.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.004342079162597656,
+      "mse": 3.8179493344614457e-07
+    },
+    "dinov2.encoder.layer.10.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0036340951919555664,
+      "mse": 2.4078860860754503e-07
+    },
+    "dinov2.encoder.layer.10.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0007813572883605957,
+      "mse": 1.8918235866749455e-08
+    },
+    "dinov2.encoder.layer.10.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.003491044044494629,
+      "mse": 2.1878507538986014e-07
+    },
+    "dinov2.encoder.layer.10.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0009582042694091797,
+      "mse": 1.8307508398152095e-08
+    },
+    "dinov2.encoder.layer.11.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.004300892353057861,
+      "mse": 3.611488637034199e-07
+    },
+    "dinov2.encoder.layer.11.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.004027843475341797,
+      "mse": 3.514004731641762e-07
+    },
+    "dinov2.encoder.layer.11.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0037651658058166504,
+      "mse": 2.8249601768948196e-07
+    },
+    "dinov2.encoder.layer.11.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0008399486541748047,
+      "mse": 1.0691072027668724e-08
+    },
+    "dinov2.encoder.layer.11.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.00362551212310791,
+      "mse": 2.3279444860691e-07
+    },
+    "dinov2.encoder.layer.11.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0010115504264831543,
+      "mse": 1.6890808751668374e-08
+    },
+    "dinov2.encoder.layer.12.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.007365226745605469,
+      "mse": 5.90279398693383e-07
+    },
+    "dinov2.encoder.layer.12.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.003984689712524414,
+      "mse": 4.1404462081118254e-07
+    },
+    "dinov2.encoder.layer.12.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.00413888692855835,
+      "mse": 3.38940651545272e-07
+    },
+    "dinov2.encoder.layer.12.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0014190673828125,
+      "mse": 1.082436629218364e-08
+    },
+    "dinov2.encoder.layer.12.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.00432431697845459,
+      "mse": 2.7998493123959634e-07
+    },
+    "dinov2.encoder.layer.12.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.001546621322631836,
+      "mse": 1.7995308354556983e-08
+    },
+    "dinov2.encoder.layer.13.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.0063550472259521484,
+      "mse": 5.550713808588625e-07
+    },
+    "dinov2.encoder.layer.13.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.004603385925292969,
+      "mse": 4.5800499037795817e-07
+    },
+    "dinov2.encoder.layer.13.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.004578590393066406,
+      "mse": 3.926837166545738e-07
+    },
+    "dinov2.encoder.layer.13.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0018301010131835938,
+      "mse": 1.7927987983057392e-08
+    },
+    "dinov2.encoder.layer.13.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0054056644439697266,
+      "mse": 3.538712292083801e-07
+    },
+    "dinov2.encoder.layer.13.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0010761246085166931,
+      "mse": 2.426156875401375e-08
+    },
+    "dinov2.encoder.layer.14.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.008195698261260986,
+      "mse": 6.733839086336957e-07
+    },
+    "dinov2.encoder.layer.14.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.005326032638549805,
+      "mse": 5.342827762433444e-07
+    },
+    "dinov2.encoder.layer.14.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.005145817995071411,
+      "mse": 5.106197704662918e-07
+    },
+    "dinov2.encoder.layer.14.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0020334720611572266,
+      "mse": 1.7011917208265004e-08
+    },
+    "dinov2.encoder.layer.14.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.00841665267944336,
+      "mse": 3.9373961158162274e-07
+    },
+    "dinov2.encoder.layer.14.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0011698491871356964,
+      "mse": 2.2748384509441166e-08
+    },
+    "dinov2.encoder.layer.15.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.011015444993972778,
+      "mse": 6.80213133819052e-07
+    },
+    "dinov2.encoder.layer.15.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.007368095219135284,
+      "mse": 4.800309625352384e-07
+    },
+    "dinov2.encoder.layer.15.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.009480953216552734,
+      "mse": 4.188698596863105e-07
+    },
+    "dinov2.encoder.layer.15.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0014033317565917969,
+      "mse": 1.189900888931561e-08
+    },
+    "dinov2.encoder.layer.15.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.008005857467651367,
+      "mse": 4.167812903688173e-07
+    },
+    "dinov2.encoder.layer.15.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.001518845558166504,
+      "mse": 2.4065958115215835e-08
+    },
+    "dinov2.encoder.layer.16.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.011553287506103516,
+      "mse": 7.863794735385454e-07
+    },
+    "dinov2.encoder.layer.16.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.01264190673828125,
+      "mse": 6.605637281609233e-07
+    },
+    "dinov2.encoder.layer.16.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.01551675796508789,
+      "mse": 5.683451718141441e-07
+    },
+    "dinov2.encoder.layer.16.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0024580955505371094,
+      "mse": 2.1601065824938814e-08
+    },
+    "dinov2.encoder.layer.16.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.016420722007751465,
+      "mse": 5.076387878943933e-07
+    },
+    "dinov2.encoder.layer.16.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0014878027141094208,
+      "mse": 2.369142038105565e-08
+    },
+    "dinov2.encoder.layer.17.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.01431417465209961,
+      "mse": 6.799567131565709e-07
+    },
+    "dinov2.encoder.layer.17.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.011523246765136719,
+      "mse": 5.951095545242424e-07
+    },
+    "dinov2.encoder.layer.17.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.015023231506347656,
+      "mse": 4.920219680570881e-07
+    },
+    "dinov2.encoder.layer.17.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0023276209831237793,
+      "mse": 3.361968126114334e-08
+    },
+    "dinov2.encoder.layer.17.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0906219482421875,
+      "mse": 8.055944249463209e-07
+    },
+    "dinov2.encoder.layer.17.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.005946159362792969,
+      "mse": 3.275530602309118e-08
+    },
+    "dinov2.encoder.layer.18.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.008353084325790405,
+      "mse": 6.192939281390863e-07
+    },
+    "dinov2.encoder.layer.18.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.007543444633483887,
+      "mse": 5.516374699254811e-07
+    },
+    "dinov2.encoder.layer.18.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.00980234146118164,
+      "mse": 4.0021052427618997e-07
+    },
+    "dinov2.encoder.layer.18.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0032787322998046875,
+      "mse": 1.630496804239101e-08
+    },
+    "dinov2.encoder.layer.18.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.11414337158203125,
+      "mse": 7.003307587183372e-07
+    },
+    "dinov2.encoder.layer.18.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0037653446197509766,
+      "mse": 2.66368740398093e-08
+    },
+    "dinov2.encoder.layer.19.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.01214587688446045,
+      "mse": 7.579630505460955e-07
+    },
+    "dinov2.encoder.layer.19.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.007883071899414062,
+      "mse": 6.470944526881794e-07
+    },
+    "dinov2.encoder.layer.19.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.008212089538574219,
+      "mse": 5.071990472060861e-07
+    },
+    "dinov2.encoder.layer.19.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0030145645141601562,
+      "mse": 1.570756680280283e-08
+    },
+    "dinov2.encoder.layer.19.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.013125896453857422,
+      "mse": 5.702763701265212e-07
+    },
+    "dinov2.encoder.layer.19.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0016993284225463867,
+      "mse": 2.1029084251722452e-08
+    },
+    "dinov2.encoder.layer.20.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.010158538818359375,
+      "mse": 6.907548595336266e-07
+    },
+    "dinov2.encoder.layer.20.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.008556365966796875,
+      "mse": 6.451627427850326e-07
+    },
+    "dinov2.encoder.layer.20.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.0064529478549957275,
+      "mse": 4.879653943135054e-07
+    },
+    "dinov2.encoder.layer.20.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.002529144287109375,
+      "mse": 1.004318228581269e-08
+    },
+    "dinov2.encoder.layer.20.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0077933669090271,
+      "mse": 5.576298462983686e-07
+    },
+    "dinov2.encoder.layer.20.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0036361217498779297,
+      "mse": 1.8983726590704464e-08
+    },
+    "dinov2.encoder.layer.21.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.007967472076416016,
+      "mse": 7.707458280492574e-07
+    },
+    "dinov2.encoder.layer.21.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.0070920586585998535,
+      "mse": 7.231633958326711e-07
+    },
+    "dinov2.encoder.layer.21.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.007574558258056641,
+      "mse": 5.794526032332215e-07
+    },
+    "dinov2.encoder.layer.21.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.003390789031982422,
+      "mse": 1.0039738818079513e-08
+    },
+    "dinov2.encoder.layer.21.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.008015871047973633,
+      "mse": 7.828383559171925e-07
+    },
+    "dinov2.encoder.layer.21.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0033941268920898438,
+      "mse": 2.1391450388819067e-08
+    },
+    "dinov2.encoder.layer.22.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.0115126371383667,
+      "mse": 9.136971357293078e-07
+    },
+    "dinov2.encoder.layer.22.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.007928848266601562,
+      "mse": 7.882371733103355e-07
+    },
+    "dinov2.encoder.layer.22.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.007911324501037598,
+      "mse": 5.854386699866154e-07
+    },
+    "dinov2.encoder.layer.22.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.008662223815917969,
+      "mse": 1.926771631133306e-08
+    },
+    "dinov2.encoder.layer.22.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.012090206146240234,
+      "mse": 8.38452763218811e-07
+    },
+    "dinov2.encoder.layer.22.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.003887653350830078,
+      "mse": 2.030103907202374e-08
+    },
+    "dinov2.encoder.layer.23.attention.attention.query": {
+      "pass": false,
+      "max_err": 0.008866548538208008,
+      "mse": 7.772620165269473e-07
+    },
+    "dinov2.encoder.layer.23.attention.attention.key": {
+      "pass": false,
+      "max_err": 0.011414527893066406,
+      "mse": 8.117966103782237e-07
+    },
+    "dinov2.encoder.layer.23.attention.attention.value": {
+      "pass": false,
+      "max_err": 0.009572505950927734,
+      "mse": 5.961391593700682e-07
+    },
+    "dinov2.encoder.layer.23.attention.output.dense": {
+      "pass": false,
+      "max_err": 0.0033402442932128906,
+      "mse": 2.2862685966629215e-08
+    },
+    "dinov2.encoder.layer.23.mlp.fc1": {
+      "pass": false,
+      "max_err": 0.0125732421875,
+      "mse": 5.365546940083732e-07
+    },
+    "dinov2.encoder.layer.23.mlp.fc2": {
+      "pass": false,
+      "max_err": 0.0017310380935668945,
+      "mse": 4.2165797964344165e-08
+    },
+    "classifier": {
+      "pass": false,
+      "max_err": 0.001300215721130371,
+      "mse": 7.609851309098303e-07
+    }
+  }
+}

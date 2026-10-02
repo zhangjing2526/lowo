@@ -4,14 +4,14 @@ One row per training seed.  The visual is the sign flip, not mean+/-std.
 
     python make_a2_a6_paired_diff.py
 """
-import os
+from pathlib import Path
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-ROOT = r'G:\material\天枢\mamba'
+ROOT = Path(__file__).resolve().parents[1]
 
 plt.rcParams.update({
     'pdf.fonttype': 42,
@@ -87,8 +87,8 @@ ax.legend(handles=legend, loc='upper left', frameon=True,
           columnspacing=1.1)
 
 fig.tight_layout(pad=0.28)
-out = os.path.join(ROOT, 'figs', 'a2_a6_paired_diff.pdf')
+out = ROOT / 'figs' / 'a2_a6_paired_diff.pdf'
 fig.savefig(out, bbox_inches='tight', pad_inches=0.02)
-fig.savefig(out.replace('.pdf', '.png'), dpi=300,
+fig.savefig(out.with_suffix('.png'), dpi=300,
             bbox_inches='tight', pad_inches=0.02)
 print('wrote', out)

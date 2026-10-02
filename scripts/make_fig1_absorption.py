@@ -15,17 +15,17 @@ Light fills + dark text only (no dark surfaces).
 """
 import argparse
 import os
+from pathlib import Path
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-ROOT = r'G:\material\天枢\mamba'
+ROOT = Path(__file__).resolve().parents[1]
 
 _ap = argparse.ArgumentParser()
-_ap.add_argument('--out', default=os.path.join(ROOT, 'figs',
-                                               'fig1_absorption.pdf'))
+_ap.add_argument('--out', default=str(ROOT / 'figs' / 'fig1_absorption.pdf'))
 _ap.add_argument('--fontsize', type=float, default=7.5,
                  help='base point size; printed size = this x '
                       '(display_width / natural_width)')

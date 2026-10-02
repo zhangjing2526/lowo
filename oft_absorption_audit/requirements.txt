@@ -1,0 +1,7 @@
+# OFT Absorption Audit — 依赖
+torch>=2.0
+transformers>=4.36
+peft>=0.8
+datasets>=2.16
+Pillow>=10.0
+numpy>=1.24
