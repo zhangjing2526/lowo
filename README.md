@@ -10,27 +10,26 @@ Audit for 3D Resampling*
 
 Code: [https://github.com/zhangjing2526/lowo](https://github.com/zhangjing2526/lowo)
 
-A learned orthogonal transform can sit far from its initialization
-(\(\|Q-I\|_F=3.53\) of a \(5.66\) maximum) and reshape every analysis filter,
-yet be removed *exactly*: the adjacent \(1{\times}1\) mixer absorbs it.  We
-separate three routinely conflated questions — **structural validity** (is the
-operator orthogonal / PR?), **functional necessity** (does the trained map still
-require the learned factor, or does the adjacent mixer absorb it?), and **task
-utility** (does a non-absorbable factor improve held-out performance?) — and
-contribute a **checkpoint-only absorption audit**: with no data and no
-retraining, the learned factor is folded into the adjacent mixer, giving a
-per-site escape fraction \(\rho\) against the mixer class, where \(\rho=0\) is
-an exact equivalence.
+A learned orthogonal transform can move far from its initialization yet remain
+exactly absorbable by an adjacent dense mixer. This repository accompanies a
+**checkpoint-only, transform-level absorption audit**: it asks whether folding
+the learned factor preserves the adjacent mixer's prescribed connectivity.
 
-Over **163 sites in ten trained 3D checkpoints** the fold reproduces every
-network to float64 round-off (\(5.9{\times}10^{-15}\)): 59 non-trivial rotations
-are exactly removable, every dense mixer gives \(\rho=0\), and only a
-*per-subband* mixer lets a generic rotation become non-removable.  Closing that
-loophole is necessary for attributing a learned basis but **not sufficient** for
-a gain (three seeds: \(+0.79\), \(+0.85\), \(-0.85\) Dice points).  LOWO is our
-controlled testbed; **fixed Haar with a per-subband mixer (grouped 3D Haar control) is a
-*necessary attribution control* before any claim that a learned factor is
-used** — not a recommended architecture.
+We separate **structural validity** (orthogonality and perfect reconstruction),
+**adjacent-mixer removability** (exact folding within the allowed mixer class),
+and **task utility** (held-out performance). Across **10 checkpoints and 163
+transform locations**, original and unrestricted merged blocks agree to a
+maximum relative output error of **5.9×10⁻¹⁵ in FP64**. This is a per-block
+implementation check, not a whole-network error bound or evidence that every
+fold preserves grouped connectivity. The audit finds 32 frozen identity
+factors and 59 learned dense-mixer factors with zero escape, and 72 learned
+grouped-mixer factors with positive escape.
+
+On BraTS2021, fixed-Haar A2 and separable-learnable A4 use **12.1% fewer
+parameters** than B0 and achieve higher Dice in all three runs; A4 has the
+highest mean Dice (**0.9015 ± 0.0007**). Learning full rotations in A6 gives
+no consistent additional gain over A2. LOWO is the controlled testbed for
+these structural and performance comparisons.
 
 ```text
 ┌───────────────────────────────────────────────────────────┐
@@ -42,7 +41,7 @@ used** — not a recommended architecture.
          │ stride-2 conv³D (DWT fused)          (IDWT = same kernel, transposed)
          ▼
   subband-major 8C feature map ──► 1×1 subband mixer
-       groups=1 absorbs Q     groups=8 makes Q locally non-removable under the specified adjacent mixer class
+       groups=1 absorbs Q     groups=8 can obstruct absorption (see criterion below)
 ```
 
 ---
@@ -51,62 +50,109 @@ used** — not a recommended architecture.
 
 | Path | Contents |
 |---|---|
-| `model_segmamba/lowo.py` | **The LOWO operator itself** — `HaarWavelet3D`, `HaarDownsample`, `HaarUpsample`, `WaveletConv3d`. Backbone-agnostic (only `torch`). Modes: fixed Haar (`Q=I`), separable-angle `theta` (3 DOF), `so8` (\(Q=\exp(A-A^\top)\in SO(8)\), 28 DOF), and `per_channel`. |
+| `model_segmamba/lowo.py` | **The LOWO operator itself** — `HaarWavelet3D`, `HaarDownsample`, `HaarUpsample`, `WaveletConv3d`. Backbone-agnostic (only `torch`). Modes: fixed Haar (`Q=I`), separable-angle `theta` (3 DOF), `so8` ($Q=\exp(A-A^\top)\in SO(8)$, 28 DOF), and `per_channel`. |
 | `model_segmamba/haar_blocks.py` | UNet decoder blocks built on LOWO (`WaveletGSC`, `HaarUpBlock`, `MlpChannel`). |
 | `model_segmamba/segmamba_haar.py` | SegMamba + LOWO (encoder/decoder wiring). |
 | `model_segmamba/segmamba_attn.py` | SegAttn + LOWO (window-attention sequence mixer). C1/C2. |
 | `model_segmamba/segmamba.py` | Original SegMamba backbone (Mamba SSM mixer) — **B0** & the low-precision reference. |
 | `configs/` | One YAML per paper arm. IDs match the paper; filenames encode the factors (wavelet × mixer). |
-| `verify_absorption.py` | **Exact audit** — analysis mixers fold as \(W'=W(Q\otimes I)\), decoder as \(Q^\top W\), WaveletConv as \(R^\top WR\). Reproduces each trained map to float64 round-off from the checkpoint alone (CPU, no data, no GPU). |
+| `verify_absorption.py` | **Exact audit** — analysis mixers fold as $W'=W(Q\otimes I)$, decoder as $R^\top W$, WaveletConv as $R^\top WR$. Checks each audited block against its unrestricted fold to float64 round-off from the checkpoint alone (CPU, no data, no GPU). |
 | `checkpoints/a6_so8_g8_audit.pt` | Wavelet `Q` and adjacent mixer tensors from the A6 checkpoint (not the full 226 MB training weight). |
-| `analysis/absorption_sites.csv` | Per-site audit records for the ten trained checkpoints (163 sites: A1–A8, C1, C2; drift \(\|Q-I\|_F\), escape fraction \(\rho\), fold error). One checkpoint per arm; A4 is seed 123. |
+| `analysis/absorption_sites.csv` | Per-site audit records for the ten trained checkpoints (163 sites: A1–A8, C1, C2; drift $\|Q-I\|_F$, escape fraction $\rho$, fold error). One checkpoint per arm; A4 is seed 123. |
 | `analysis/a4_sites.csv` | A4 sites across three seeds. Only seed 123 is merged into the 163-site table. |
 | `run_test_eval.py` | Held-out Dice / HD95 protocol (8-way TTA, overlap 0.7, `--force_ethr 50`). Defaults to the frozen `splits/test_250.txt`. Needs BraTS data and a full training checkpoint. |
 | `splits/test_250.txt` | Frozen 250-case **internal held-out** list used in the paper (not the official BraTS test set). |
 | `splits/val_125.txt` | Frozen 125-case validation list used for checkpoint selection. |
-| `cifar2d/` | 2D probe: \(SO(4)\) Haar downsample on CIFAR ResNet-18. Analysis fold only (`mix(dwt(x))`). Scripts, no weights. |
-| `scripts/fold_sandwich_projection.py` (+ `fold_all_sites_check.py`, `fold_audit_supplement.py`, `repro_s32_sandwich_dice.py`) | **§3.2 grouped-sandwich Dice audit** — from the A6 checkpoint, pick low/mid/high-ρ sandwich sites and build exact-reparam vs forced shared-block variants; reports mean Dice change (<4×10⁻⁶) and worst-case drift (0.0038→0.344) on the frozen 250 cases. |
+| `cifar2d/` | 2D probe: $SO(4)$ Haar downsample on CIFAR ResNet-18. Analysis fold only (`mix(dwt(x))`). Scripts, no weights. |
+| `scripts/fold_sandwich_projection.py` (+ `fold_all_sites_check.py`, `fold_audit_supplement.py`, `repro_s32_sandwich_dice.py`) | **§3.2 grouped-sandwich Dice audit** — from the A6 checkpoint, pick low/mid/high-ρ sandwich sites and build exact-reparam vs forced block-diagonal variants; reports mean Dice change (<4×10⁻⁶) and worst-case drift (0.0038→0.344) on the frozen 250 cases. |
 | `oft_absorption_audit/` | External-operator OFT merge audit: a self-trained OFT adapter on a public DINOv2 ViT-Large backbone. 12 scripts + report JSONs; detailed experiment notes in `oft_absorption_audit/README.md`. |
-| `figs/` | The three paper figures (PDF) **plus their editable sources**: the absorption fold (`fig1_absorption.pdf`, source `scripts/fig1_method_overview.py` → `figs/fig1_method_overview.svg`), the audit over 163 sites (`drift_vs_rho.pdf`, source `scripts/make_rho_scatter.py` / `scripts/replot_rho_scatter.py`), and the A2/A6 paired difference (`a2_a6_paired_diff.pdf`, source `scripts/make_a2_a6_paired_diff.py`). |
+| `figs/` | The two main-paper figures and an additional paired-difference figure (PDF) **plus their editable sources**: the absorption fold (`fig1_absorption.pdf`, source `scripts/fig1_method_overview.py` → `figs/fig1_method_overview.svg`), the audit over 163 sites (`drift_vs_rho.pdf`, source `scripts/make_rho_scatter.py` / `scripts/replot_rho_scatter.py`), and the A2/A6 paired difference (`a2_a6_paired_diff.pdf`, source `scripts/make_a2_a6_paired_diff.py`). |
 | `requirements.txt` | Python dependencies. |
 
-A positive \(\rho\) means \(Q\) is **locally non-removable under the specified adjacent mixer
-class** (locally non-absorbable by the adjacent mixer).  It is not unique recovery of \(Q\) from
+A positive $\rho$ means $Q$ is **locally non-removable under the specified adjacent mixer
+class** (locally non-absorbable by the adjacent mixer).  It is not unique recovery of $Q$ from
 the network: sign, permutation, and downstream layers remain.
 
-`splits/test_250.txt` and `splits/val_125.txt` are an **internal held-out
-subset** of the BraTS2021 training pool, not the official BraTS test set.
-Training and eval load these lists automatically so the partition does not
-depend on `glob` order. The training complement is every remaining case
-under the npz directory.
+`splits/test_250.txt` and `splits/val_125.txt` contain **internal held-out
+subsets** of the BraTS2021 training pool, not the official BraTS test set.
+The paper used **875 training / 125 validation / 250 test cases**, with split
+seed 42; one of 1251 cases was excluded by split-size rounding.
+
+Evaluation uses the shipped held-out lists. The published training loader
+still derives its split from filesystem order and seed 42; a fixed seed alone
+does not guarantee the same partition on another host. The original 875-case
+training list and excluded case ID are not included in this release, so exact
+training-split reproduction requires the original file order or saved lists.
+
+The training entry points also pass a `dump_split_dir` argument that the
+published loader does not yet accept. The training commands below identify the
+intended configurations; end-to-end retraining requires resolving this interface
+mismatch and checking the split. The checkpoint-only audit does not use that
+loader, and held-out evaluation uses its own frozen-list override.
 
 ## Three questions, three answers
 
 Work on learned filter banks routinely conflates three questions:
 
-1. **Structural validity** — is the operator orthogonal and perfect-reconstruction (PR)? *Follows from the construction (Section "LOWO: A Controlled Testbed").*
-2. **Functional necessity** — does the trained map still require the learned factor, or can the adjacent mixer absorb it exactly? *Decided by the mixer class, not by the coefficients (the audit).*
-3. **Task utility** — does a non-absorbable factor improve held-out performance? *Does not follow from (ii): three seeds give no stable Dice direction (Section "Task utility").*
+1. **Structural validity** — is the operator orthogonal and perfect-reconstruction (PR)? *Follows from the orthogonal construction, with even spatial sizes and no padding or cropping.*
+2. **Adjacent-mixer removability** — can the prescribed adjacent mixer absorb the learned factor exactly? *Determined from the folded checkpoint weights and allowed connectivity.*
+3. **Task utility** — does a non-absorbable factor improve held-out performance? *Does not follow from (ii): A2 versus A6 gives no stable Dice direction.*
 
 LOWO is the **vehicle**, not the contribution: a learned orthogonal
 wavelet-initialized operator that manufactures both verdicts inside one network
 family, so the audit can be observed exactly, from a checkpoint, without a
 second dataset.
 
+## Absorption criterion (paper §2.2–2.3)
+
+For shared channel-wise rotations, $R=Q\otimes I_C$. With an unrestricted bias,
+the exact folds are:
+
+| Arrangement | Folded weight | Folded bias |
+|---|---|---|
+| Analysis | $W'=WR$ | $b'=b$ |
+| Synthesis | $W'=R^\top W$ | $b'=R^\top b$ |
+| Sandwich | $W'=R^\top WR$ | $b'=R^\top b$ |
+
+Let $P_g$ keep weights allowed by the original grouping and zero all others:
+
+$$
+\rho=\frac{\|W'-P_g(W')\|_F}{\|W'\|_F},
+\qquad \rho=0\text{ when }W'=0.
+$$
+
+**Proposition 1:** for an invertible transform, linear adjacency and unrestricted
+biases, absorption without changing the prescribed grouping is possible if and
+only if $\rho=0$. The reported audit uses FP64 and a numerical zero threshold
+of $10^{-12}$. An unrestricted dense fold remains an algebraic identity when
+$\rho>0$, but may change the connectivity.
+
+**Proposition 2:** for a shared sandwich rotation and
+$W=\operatorname{diag}(W_0,\ldots,W_7)$, the fold stays block diagonal if and
+only if each column of $Q$ has nonzero entries only on identical blocks $W_i$.
+Identical blocks permit arbitrary shared rotations; pairwise-distinct blocks
+permit only signed permutations compatible with $Q\in SO(8)$. Intermediate
+cases permit rotations within identical-block classes and permutations.
+Channel-specific rotations are outside Proposition 2; Proposition 1 still
+applies. Thus `groups=8` does not make every possible rotation non-removable.
+
+A positive $\rho$ is a local obstruction under the specified mixer class,
+not unique recovery of a basis or a guarantee of a performance gain.
+
 ## Paper arms and their configs
 
 `wavelet_mode: so8` + `learnable_wavelet: false` is exactly standard Haar
-(\(Q = I\), \(\theta = \pi/4\)).  Two knobs manufacture the audit's two
-verdicts: whether \(Q\) is frozen at \(I\) (the 0-DOF rung) or trainable
+($Q = I$, $\theta = \pi/4$).  Two knobs manufacture the audit's two
+verdicts: whether $Q$ is frozen at $I$ (the 0-DOF rung) or trainable
 (28-DOF), and whether the adjacent mixer is dense (`groups=1`) or per-subband
 (`groups=8`).
 
-### Baselines
+### Baseline and additional reference
 
 | ID | Backbone | Config |
 |---|---|---|
 | B0 | SegMamba, learned stride-2 conv (67.42 M params) | `configs/B0_segmamba.yaml` |
-| S1 | SwinUNETR (unweighted CE, no deep supervision) | `configs/S1_swin_unetr.yaml` |
+| S1 (additional; outside Table 1) | SwinUNETR (unweighted CE, no deep supervision) | `configs/S1_swin_unetr.yaml` |
 
 ### Main ablation (SegMamba + LOWO)
 
@@ -114,14 +160,15 @@ verdicts: whether \(Q\) is frozen at \(I\) (the 0-DOF rung) or trainable
 |---|---|---|
 | fixed Haar (`Q = I`) | **A1** `configs/A1_fixed_g1.yaml` | **A2** `configs/A2_fixed_g8.yaml` (grouped 3D Haar control on BraTS) |
 | learnable θ (3 DOF) | **A3** `configs/A3_theta_g1.yaml` | **A4** `configs/A4_theta_g8.yaml` |
-| learnable \(Q\in SO(8)\) (28 effective DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
+| learnable $Q\in SO(8)$ (28 effective DOF) | **A5** `configs/A5_so8_g1.yaml` | **A6** `configs/A6_so8_g8.yaml` |
 
-A2 and A6 differ only in whether \(A\) is trainable.  `groups=8` makes a generic
-learned \(Q\) locally non-absorbable; A2 remains the \(Q=I\) control, and learning
-\(Q\) shows no consistent Dice gain on BraTS.  LOWO replaces, without changing the
+A2 and A6 differ only in whether $A$ is trainable.  `groups=8` makes a generic
+learned $Q$ locally non-absorbable; A2 remains the $Q=I$ control, and learning
+$Q$ shows no consistent Dice gain on BraTS.  LOWO replaces, without changing the
 backbone, the stem, stride-2 downsampling, transposed upsampling, and an
-equal-channel \(3{\times}3{\times}3\) convolution: **16 filter-bank sites per
-checkpoint**.
+equal-channel $3{\times}3{\times}3$ convolution: **16 filter-bank sites per standard checkpoint**: 4 analysis, 4 synthesis,
+and 8 sandwich sites. Analysis grouping is the factor varied in the table;
+synthesis mixers are dense and sandwich mixers are per-subband grouped.
 
 ### Probes (one extra factor on top of a main arm)
 
@@ -132,30 +179,48 @@ checkpoint**.
 | C1 | A5 wavelet | SegAttn backbone (window attention) | `configs/C1_segattn_so8_g1.yaml` |
 | C2 | C1 | routing probe | `configs/C2_segattn_so8_g1_routed.yaml` |
 
-The audit cohort is every configuration we trained: A1–A8 plus C1 (a
+The structural audit cohort is A1–A8 plus C1 (a
 window-attention backbone with a dense downsample mixer) and C2 (C1 with a
-routing probe) — **ten checkpoints, 163 sites**.
+routing probe) — **ten checkpoints, 163 sites**. A8 has 19 locations because of its
+modality-specific stem factors; the other nine checkpoints have 16 each.
+A7, A8, C1 and C2 are structural probes outside the segmentation table.
 
-## Main results (internal held-out BraTS2021, 250 volumes, three seeds)
+## Main results (paper Table 1)
 
-| Config. | Par. (M) | 123 | 456 | 789 | mean\(\pm\)std |
-|---|---|---|---|---|---|
-| B0 learned stride conv | 67.42 | 0.8987 | 0.8828 | 0.8928 | \(0.8914{\pm}0.0080\) |
-| A2 fixed Haar, \(Q=I\) | 59.25 | 0.9017 | 0.9016 | 0.8936 | \(0.8990{\pm}0.0046\) |
-| A6 \(SO(8)\), \(Q\) learned | 59.25 | 0.8938 | 0.8931 | 0.9021 | \(0.8963{\pm}0.0050\) |
-| A2\(-\)A6 | — | \(+0.79\) | \(+0.85\) | \(-0.85\) | \(+0.26{\pm}0.96\) |
+Mean Dice over TC, WT and ET on the fixed 250-case internal held-out split:
 
-A2 uses **12% fewer parameters** than B0 (59.25 M vs 67.42 M), but the saving
-belongs to the full A2 replacement (the Haar resampler accounts for 7.49 M and
-the grouping for 0.68 M); we do not attribute the reduction to fixed Haar alone.
-Over three seeds B0 averages \(0.8914{\pm}0.0080\): A2 is a smaller rung of
-comparable accuracy rather than a demonstrated win, and we do not call the two
-compatible (no pre-specified non-inferiority margin).  The sign reverses once,
-so we report **no stable Dice direction** from the 28 degrees of freedom per
-site under this protocol.  What survives is weaker and more useful: once the
-mixer already makes a generic \(Q\) locally non-removable under the specified adjacent mixer class, allocating \(SO(8)\) capacity
-there yields no stable held-out gain.  **Non-removability is necessary for
-attributing a learned basis and not sufficient for a performance claim.**
+| ID | Configuration | 123 | 456 | 789 | Mean ± sample SD |
+|---|---|---:|---:|---:|---:|
+| B0 | Strided convolution | 0.8987 | 0.8828 | 0.8928 | 0.8914 ± 0.0080 |
+| A1 | Fixed Haar, g=1 | 0.8846 | 0.8951 | 0.8992 | 0.8930 ± 0.0075 |
+| A2 | Fixed Haar, g=8 | 0.9017 | 0.9016 | 0.8936 | 0.8990 ± 0.0046 |
+| A3 | Separable θ, g=1 | 0.8802 | 0.9012 | 0.8917 | 0.8911 ± 0.0105 |
+| A4 | Separable θ, g=8 | 0.9007 | 0.9020 | 0.9018 | 0.9015 ± 0.0007 |
+| A5 | SO(8), g=1 | 0.8944 | 0.8852 | 0.8955 | 0.8917 ± 0.0057 |
+| A6 | SO(8), g=8 | 0.8938 | 0.8931 | 0.9021 | 0.8964 ± 0.0050 |
+| A2−A6 | Percentage points | +0.79 | +0.84 | -0.85 | +0.26 ± 0.96 |
+
+Statistics and paired differences are calculated from the **unrounded seed
+metrics** in the original experiment records, then rounded for display. For example, A6 averages 0.8963553229, and the seed-456 A2−A6
+difference is 0.8447175 percentage points. The existing additional paired-difference
+plot was generated from rounded seed values; the table above uses the original
+precision and matches the paper.
+
+A2, A4 and A6 exceed B0 in mean Dice by **0.76, 1.01 and 0.50 points**,
+respectively; grouped-versus-dense differences are **0.60 (A2−A1), 1.04
+(A4−A3) and 0.47 (A6−A5) points**. A2 and A4 exceed B0 in all three runs,
+and **A4 has the highest mean Dice, 0.9015 ± 0.0007**. These are observed
+results across three runs, not a claim of statistical significance.
+
+Grouped variants have **59.25 M parameters versus B0's 67.42 M (12.1% fewer)**,
+but measured inference latency is not lower. The parameter saving belongs to
+the full replacement: 7.49 M from the Haar resampler and 0.68 M from grouping,
+rather than fixed Haar alone.
+
+A2 and A6 isolate full-rotation learning. At the audited A6 checkpoint, 12/16
+locations are non-removable under their prescribed mixers, yet A2−A6 changes
+sign across seeds. **Structural non-removability does not imply a consistent
+task gain.**
 
 ## Quick start
 
@@ -170,7 +235,7 @@ pip install -r requirements.txt
 ### Verify the absorption identity (CPU, no data — the paper's exact audit)
 
 ```bash
-# 1. no download: random Q, W  (proves the identity; numbers will not match the paper)
+# 1. no download: random Q, W (numerically checks the identity)
 python verify_absorption.py --synthetic
 
 # 2. the paper's A6 tensors (in-repo, ~few MB) — A6's own max fold is 4.3e-15
@@ -193,31 +258,34 @@ max fold error: 4.3e-15
 inert (ρ≈0): 4/16
 ```
 
-(A6 uses `groups=8` on the encoder mixers, so only the four decoder upsamples
-are absorbed. A5 with `groups=1` is 8/16 absorbed.)
+(A6 has 4 grouped analysis sites, 8 grouped sandwich sites and 4 dense
+synthesis sites: 4/16 have zero escape. A5 has dense analysis and synthesis
+mixers but grouped sandwich mixers: 8/16 have zero escape.)
 
 The paper-wide figure is the maximum over all 163 sites in
 `analysis/absorption_sites.csv`.  Command 3 prints `163 91 5.92...e-15`.
 
 A full training checkpoint (`best_model_0.9317.pt`, ~226 MB) is **not** required
-for this audit. Host that file on a GitHub Release / Zenodo / Hugging Face
-dataset if you want to reproduce Dice; do not put it on a region-locked drive.
+for this audit. Full training weights are not included and no download URL
+is supplied in this release. Dice reproduction needs the full matching
+checkpoint and BraTS2021; the small audit-only tensor file cannot produce
+segmentation predictions.
 
 ### Reproduce a paper arm (example: A6, learnable Q + groups=8)
 
 ```bash
-# 1. data -> ./data/fullres/train (BraTS2021, labels remapped 4→3)
-python scripts/rename_brats2021_data.py
-python scripts/preprocessing_brats2021.py
+# 1. raw data -> ./data/fullres/train (labels remapped 4→3)
+python scripts/rename_brats2021_data.py --data-dir /path/to/BraTS2021
+python scripts/preprocessing_brats2021.py --data-dir /path/to/BraTS2021
 
 # 2. train (500 epochs, weighted CE+Tversky + deep supervision, poly-SGD)
-python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8
+python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8 --seed 123
 
 # 3. inference + metrics (sliding window, overlap 0.7, 8-way mirror TTA,
 #    ET→NCR volume threshold fixed at 50 — the protocol behind the table)
 python run_test_eval.py --config configs/A6_so8_g8.yaml \
     --ckpt logs/segmamba_haar_so8_dicece_ds/a6_so8_g8_s123/model/best_model_*.pt \
-    --force_ethr 50 --stage test
+    --out_dir ./analysis_results/a6_s123 --force_ethr 50 --stage test
 ```
 
 C1 / C2 use the same trainer (`model: segattn_haar` in the YAML) and do not
@@ -225,7 +293,7 @@ import `mamba_ssm`:
 
 ```bash
 python train_brats2021.py --config configs/C1_segattn_so8_g1.yaml
-python train_brats2021_attn.py   # equivalent, attention-only script
+# The unified trainer selects the attention backbone from this config.
 ```
 
 All arms share the identical **evaluation** protocol (same internal held-out
@@ -237,6 +305,17 @@ shipped frozen lists (`splits/test_250.txt`, `splits/val_125.txt`); pass
 not portable across hosts). Dice reproduction still needs BraTS2021 and a full
 training checkpoint; the absorption audit does not.
 
+To repeat a main arm with three seeds (Bash):
+
+```bash
+for seed in 123 456 789; do
+  python train_brats2021.py --config configs/A6_so8_g8.yaml --tag a6_so8_g8 --seed "$seed"
+done
+```
+
+Provide one explicit checkpoint path to evaluation if a wildcard matches more
+than one file.
+
 ## Repository layout rationale
 
 - **`model_segmamba/lowo.py` is deliberately dependency-free** (torch only), so
@@ -245,12 +324,16 @@ training checkpoint; the absorption audit does not.
 - **`verify_absorption.py` is deliberately data-free**: local absorbability is an
   architectural property, verified exactly per checkpoint, not from aggregate
   metrics.  `cifar2d/verify_absorption_2d.py` is the same identity on analysis
-  sites only (\(SO(4)\), fold \(W'=WR\)).
-- Training framework (`light_training/`) is included verbatim so the exact
-  optimizer / LR schedule / deep-supervision helper used in the paper is
-  reproducible.
+  sites only ($SO(4)$, fold $W'=WR$).
+- Training framework (`light_training/`) includes the
+  optimizer, LR schedule and deep-supervision helper used in the paper.
+  The training interface and split limitations are described above.
 
-## Reproducing the main table
+## Training commands by arm
+
+Only **B0 and A1–A6** appear in paper Table 1. S1 is an additional baseline;
+A7, A8, C1 and C2 are structural probes. Add `--seed 123`, `--seed 456` or
+`--seed 789` to the unified training commands for the desired run.
 
 | Command | Variant |
 |---|---|
@@ -272,8 +355,18 @@ Eval (same protocol for every arm; `splits/test_250.txt` is the default):
 ```bash
 python run_test_eval.py --config configs/<arm>.yaml \
     --ckpt <full_training_weight.pt> \
-    --force_ethr 50 --stage test
+    --out_dir ./analysis_results/<run> --force_ethr 50 --stage test
 ```
+
+## Whole-network finite-precision check (paper §3.2)
+
+Folding an absorbable transform in a single A5 checkpoint without retraining
+changes TC / WT / ET Dice by **1.82×10⁻⁴ / 8.08×10⁻⁵ / 7.48×10⁻⁵** on
+average in absolute value under the reported inference settings. The maximum
+absolute TC Dice change is **1.14×10⁻³**, and the minimum voxel-wise label
+agreement is **99.9981%**. These end-to-end observations are separate from the
+FP64 per-block identity check. The experiment helpers are
+`scripts/fold_all_sites_check.py` and `scripts/fold_audit_supplement.py`.
 
 ## Grouped-sandwich Dice audit (§3.2)
 
@@ -284,16 +377,16 @@ each site builds two variants from the **same** weights:
 
 - **exact reparameterization** — fold `RᵀWR` into a dense 1×1 mixer; an exact
   identity, so predictions are unchanged up to FP round-off;
-- **forced shared-block projection** — `Π_G8`, keep only the 8 diagonal blocks
-  of the folded mixer; a *forced* simplification that the audit flags unsafe
+- **forced block-diagonal projection** — `Π_G8`, keep only the 8 diagonal blocks
+  of the folded mixer, without tying their weights; a *forced* simplification that the audit flags unsafe
   when ρ > 0.
 
-All three networks (original, exact-reparam, forced shared-block) are evaluated
-on the frozen 250 cases (`splits/test_250.txt`) and compared per-case. The shipped
-`sandwich_projection_final.json` (next to the scripts) reports the per-site result
-below (mean / worst-case single-case Dice drift over the 250 cases):
+The reported experiment evaluates all three networks (original, exact-reparam,
+forced block-diagonal) on the frozen 250 cases and compares them per case.
+The original experiment report gives the following mean and worst-case
+single-case Dice drifts. That full report is not included in this release.
 
-| site (ρ = escape fraction) | exact reparam — mean Dice Δ | exact reparam — worst-case drift | forced shared-block — mean Dice Δ | forced shared-block — worst-case drift |
+| site (ρ = escape fraction) | exact reparam — mean Dice Δ | exact reparam — worst-case drift | forced block-diagonal — mean Dice Δ | forced block-diagonal — worst-case drift |
 |---|---:|---:|---:|---:|
 | `vit.gscs.1.proj2` (ρ=0.166) | −2.94×10⁻⁶ | 2.57×10⁻⁴ | +0.0000 | 0.0038 |
 | `vit.gscs.1.proj` (ρ=0.352) | −2.71×10⁻⁶ | 2.13×10⁻⁴ | −0.0001 | 0.0076 |
@@ -301,25 +394,30 @@ below (mean / worst-case single-case Dice drift over the 250 cases):
 
 Exact reparameterization keeps mean Dice change **< 4×10⁻⁶** in all three cases
 (an identity up to FP round-off), while the worst-case single-case Dice drift of
-forced shared-block projection grows from **0.0038** (low ρ) to **0.344** (high ρ).
+forced block-diagonal projection grows from **0.0038** (low ρ) to **0.344** (high ρ).
 Thus ρ is a practical pre-deployment screen for unsafe structural simplification.
 
 | Script | Role |
 |---|---|
 | `scripts/repro_s32_sandwich_dice.py` | Portable entry point. Defaults to `configs/A6_so8_g8.yaml` + `splits/test_250.txt`; forwards the rest to the audit. |
-| `scripts/fold_sandwich_projection.py` | The audit itself (≈1010 lines): ρ ranking, variant building, per-case Dice. |
+| `scripts/fold_sandwich_projection.py` | The audit itself: ρ ranking, variant building, per-case Dice. |
 | `scripts/fold_all_sites_check.py` | Helpers: `find_repo()`, `region_dices`, `haar8`, dense fold. |
 | `scripts/fold_audit_supplement.py` | Helpers: GT Dice, TTA ablation, strict-conjugate (block-diagonal) audit. |
 
 ```bash
-# CPU self-check (no ckpt / data / GPU): proves the fold algebra is an identity
+# CPU self-check (no ckpt / data / GPU): numerically verifies the fold identity
 python scripts/repro_s32_sandwich_dice.py --selftest
 
-# Full reproduction on 8×A100 (needs the full A6 ckpt + BraTS data):
+# Full 250-case reproduction (needs the full A6 ckpt + BraTS data):
 python scripts/repro_s32_sandwich_dice.py \
-    --ckpt <mamba>/test/segmamba_haar_so8live/model/best_model_0.9317.pt \
-    --data_dir <brats2021> --purpose final --out sandwich_projection_final.json
+    --ckpt /path/to/full_A6_checkpoint.pt \
+    --data_dir ./data/fullres/train --n_cases 250 --purpose final \
+    --out sandwich_projection_final.json
 ```
+
+Pass `--n_cases 250` explicitly: the published script defaults to 10 cases,
+and `--purpose final` only labels the run; it does not select all cases.
+The script uses `cuda:0` by default and does not require eight GPUs.
 
 The exact-reparam identity is float64 ≈ 3.7e-16 / fp32 ≈ 1e-6 on CPU; the Dice
 comparison needs the full training checkpoint and BraTS data (not in this repo,
@@ -328,20 +426,26 @@ see "Reproduce a paper arm" above).
 ## CIFAR-10 2D probe (`cifar2d/`)
 
 ResNet-18, no stem DWT.  Haar sites are layer2/3/4 × (main `conv1` + skip) =
-**6 analysis sites**.  Fold is \(W'=WR\) (`groups=1` absorbs; `groups=4` can
-make \(Q\) locally non-removable under the specified adjacent mixer class).  There is no sandwich `idwt∘W∘dwt` in this probe.
+**6 analysis sites**.  Fold is $W'=WR$ (`groups=1` absorbs; `groups=4` can
+make $Q$ locally non-removable under the specified adjacent mixer class).  There is no sandwich `idwt∘W∘dwt` in this probe.
 
 | Arm | Downsample | Paper analogue |
 |---|---|---|
 | B0 | stride-2 conv | learned resample |
 | A2 | fixed Haar, `groups=4` | 2D HWD |
-| A5 | learnable \(Q\in SO(4)\), `groups=1` | absorbable |
-| A6 | learnable \(Q\in SO(4)\), `groups=4` | locally non-removable under the specified adjacent mixer class, 6 DOF |
+| A5 | learnable $Q\in SO(4)$, `groups=1` | absorbable |
+| A6 | learnable $Q\in SO(4)$, `groups=4` | locally non-removable under the specified adjacent mixer class, 6 DOF |
 
-`wave.skew` is in a **wd=0** group.  Report official-test top-1 at the best
+The paper's structural cross-check covers six analysis sites and three seeds:
+dense mixers give $\rho=0$, while grouped mixers give escape fractions of
+**56–84%**.
+
+The following accuracy comparison is an additional experiment outside the
+current paper. `wave.skew` is in a **wd=0** group.  Report official-test top-1 at the best
 validation epoch (5k hold-out from the 50k train split).  Three seeds:
-A2 \(94.44\) vs B0 \(95.14\); A6 \(94.64\) does not beat A2.  The audit
-transfers; A2\(\approx\)B0 does not.
+A2 94.44%, B0 95.14%, A6 94.64%. A6 is numerically 0.20 percentage points
+above A2; these means alone do not establish a statistically reliable gain.
+The structural audit transfers; the BraTS performance ordering need not.
 
 ```bash
 cd cifar2d
@@ -362,12 +466,12 @@ compares the original `W·ReLU(R z0)` against the fitted linear block
 **11.6%** (seed 123), versus **< 8.1×10⁻¹⁴** for the linear (no-ReLU) and
 identity (`Q=I`) controls — i.e. the failure is the non-commutation of the
 learned rotation with the pointwise nonlinearity, not the fit. This is why the
-audit assumes a linear adjacency between the folded operators (Theorem 1).
+audit assumes a linear adjacency between the folded operators (Proposition 1).
 
 ```bash
 cd cifar2d
 python nonlinear_counterexample.py --arm A5 --all-seeds --data-dir data
-# shipped result: cifar2d/nonlinear_counterexample.log
+# The historical output log is not included in this release.
 ```
 
 Needs a trained 2D A5 run (`runs/a5_s<seed>/best.pt`) and CIFAR-10 under
@@ -375,7 +479,10 @@ Needs a trained 2D A5 run (`runs/a5_s<seed>/best.pt`) and CIFAR-10 under
 
 Needs `torchvision`.  Do not commit `cifar2d/data/` or `cifar2d/runs/`.
 
-## OFT precision probe (external operator)
+## Additional experiment: OFT precision probe (outside the current paper)
+
+This experiment is retained as an additional implementation check and is not
+part of the current paper's §3.4 results.
 
 OFT (orthogonal fine-tuning, Qiu et al.) merges a learned orthogonal adapter
 into the adjacent linear layer by an exact identity in real arithmetic. We
@@ -384,8 +491,8 @@ public DINOv2 ViT-Large backbone, as an independent implementation check rather
 than a method claim. Its non-identity rotation factors are confirmed loaded and
 active, and the merge is reproduced through an independent branch. Under a
 controlled global comparison, end-to-end classification-logits differences are
-\(3.85\times10^{-3}\) (TF32), \(1.71\times10^{-5}\) (plain FP32), and
-\(3.36\times10^{-14}\) (FP64), consistent with floating-point reassociation, not
+$3.85\times10^{-3}$ (TF32), $1.71\times10^{-5}$ (plain FP32), and
+$3.36\times10^{-14}$ (FP64), consistent with floating-point reassociation, not
 accuracy loss. This shows the audit distinguishes algebraic removability from
 finite-precision nonequivalence; it does not validate the grouped-mixer or
 sandwich criterion, and the adapter's training provenance is only partially
@@ -399,7 +506,7 @@ python fixed_input_layer_replay.py --checkpoint-dir outputs/oft_adapter_checkpoi
 ```
 
 Needs PyTorch and a DINOv2 OFT adapter checkpoint (not shipped). The full
-experiment log — the earlier \(0.117\) discrepancy trace, identity-control
+experiment log — the earlier $0.117$ discrepancy trace, identity-control
 checks, layerwise drift, and the floating-point bound — lives in
 `oft_absorption_audit/README.md`; the controlled results are summarized below.
 
@@ -440,12 +547,8 @@ replay (`fixed_input_replay.json`): the captured-input replay matches the
 hook-captured output exactly (max 0.0), separating local absorb error from
 upstream-input drift.
 
-**Honesty boundary.** The adapter is self-trained on CIFAR-10; its training log
-and seed are only partially documented, so this is an *implementation* check of
-the OFT merge identity, not an audit of a third-party released checkpoint with a
-pre-trained transform.
-
 ## License
 
-Code released for research reproducibility. BraTS2021 data follows its own
-usage terms (see https://www.synapse.org/#!Synapse:syn27046444).
+Repository license: [MIT](LICENSE). Retain the notices and licenses attached
+to included upstream components. BraTS2021 data is not distributed here and
+follows its own [usage terms](https://www.synapse.org/#!Synapse:syn27046444).
