@@ -288,12 +288,21 @@ each site builds two variants from the **same** weights:
   of the folded mixer; a *forced* simplification that the audit flags unsafe
   when ρ > 0.
 
-Both variants plus the original are evaluated on the frozen 250 cases
-(`splits/test_250.txt`) and compared per-case. The shipped
-`sandwich_projection_final.json` (next to the scripts) reports: exact reparam
-changes mean Dice by **< 4×10⁻⁶** in all three cases; forced shared-block
-projection raises the worst-case single-case Dice drift from **0.0038 to 0.344**.
-So ρ is a practical pre-deployment screen for unsafe structural simplification.
+All three networks (original, exact-reparam, forced shared-block) are evaluated
+on the frozen 250 cases (`splits/test_250.txt`) and compared per-case. The shipped
+`sandwich_projection_final.json` (next to the scripts) reports the per-site result
+below (mean / worst-case single-case Dice drift over the 250 cases):
+
+| site (ρ = escape fraction) | exact reparam — mean Dice Δ | exact reparam — worst-case drift | forced shared-block — mean Dice Δ | forced shared-block — worst-case drift |
+|---|---:|---:|---:|---:|
+| `vit.gscs.1.proj2` (ρ=0.166) | −2.94×10⁻⁶ | 2.57×10⁻⁴ | +0.0000 | 0.0038 |
+| `vit.gscs.1.proj` (ρ=0.352) | −2.71×10⁻⁶ | 2.13×10⁻⁴ | −0.0001 | 0.0076 |
+| `vit.gscs.0.proj2` (ρ=0.593) | −3.87×10⁻⁶ | 4.14×10⁻⁴ | −0.0006 | 0.3441 |
+
+Exact reparameterization keeps mean Dice change **< 4×10⁻⁶** in all three cases
+(an identity up to FP round-off), while the worst-case single-case Dice drift of
+forced shared-block projection grows from **0.0038** (low ρ) to **0.344** (high ρ).
+Thus ρ is a practical pre-deployment screen for unsafe structural simplification.
 
 | Script | Role |
 |---|---|
@@ -389,11 +398,52 @@ python precision_ablation.py     --checkpoint-dir outputs/oft_adapter_checkpoint
 python fixed_input_layer_replay.py --checkpoint-dir outputs/oft_adapter_checkpoint
 ```
 
-Needs PyTorch and a DINOv2 OFT adapter checkpoint (not shipped). The detailed
+Needs PyTorch and a DINOv2 OFT adapter checkpoint (not shipped). The full
 experiment log — the earlier \(0.117\) discrepancy trace, identity-control
 checks, layerwise drift, and the floating-point bound — lives in
-`oft_absorption_audit/README.md`; only the controlled global errors above are
-summarized here.
+`oft_absorption_audit/README.md`; the controlled results are summarized below.
+
+### Results (controlled audit; dinov2-large + self-trained CIFAR-10 OFT adapter, 96 OFT layers)
+
+End-to-end classification-logit differences after `merge_and_unload()`
+(precision ablation, `precision_ablation_report.json`):
+
+| configuration | max logit Δ | MSE | interpretation |
+|---|---:|---:|---|
+| TF32 enabled | 3.85×10⁻³ | 1.16×10⁻⁶ | TF32 reassociation |
+| FP32 (TF32 off) | 1.71×10⁻⁵ | 1.32×10⁻¹¹ | FP32 reassociation |
+| FP64 | 3.36×10⁻¹⁴ | 3.09×10⁻²⁹ | double-precision magnitude |
+
+The TF32-on error is ≈225× the TF32-off error, and the FP64 residual lands at
+double-precision magnitude (not machine epsilon) — consistent with floating-point
+reassociation, not accuracy loss. Verdict: `FINITE_PRECISION`.
+
+Non-identity recovery (independent reload; `nonidentity_recovery_report.json`):
+confirms the adapter is a real, non-trivial rotation and the merge is exact.
+
+| check | result |
+|---|---|
+| layers audited / OK | 96 / 96 |
+| param-file max diff on reload | 0.0 (bit-exact) |
+| adapter active (max Δ) | yes, 0.385 |
+| ‖R−I‖_F range | 0.295 – 0.495 (non-trivial, non-identity) |
+| FP32 local absorb max | 2.19×10⁻⁵ (within Higham FP bound, ratio 0.011) |
+| FP32+TF32 local absorb max | 5.10×10⁻³ (exceeds bound, ratio 2.12 → TF32 flagged) |
+| FP64 local absorb max | 2.84×10⁻¹⁴ (double-precision magnitude) |
+| W₀ block condition number max | 1.25×10⁷ |
+
+Identity control (R=I sanity, `identity_control_report.json`): forcing R=I,
+`model(x) ≈ base(x)` holds exactly, and merge differs by max **4.17×10⁻⁶**
+(MSE 1.31×10⁻¹³, 1.875% of elements >1e-6); verdict **PASS** — the merge adds
+only FP32 reassociation noise, no implementation bug. Fixed-input single-layer
+replay (`fixed_input_replay.json`): the captured-input replay matches the
+hook-captured output exactly (max 0.0), separating local absorb error from
+upstream-input drift.
+
+**Honesty boundary.** The adapter is self-trained on CIFAR-10; its training log
+and seed are only partially documented, so this is an *implementation* check of
+the OFT merge identity, not an audit of a third-party released checkpoint with a
+pre-trained transform.
 
 ## License
 
